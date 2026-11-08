@@ -108,3 +108,6 @@ __pycache__
 .local-tools/
 .venv/
 *.pyc
+
+# agents
+.agents
