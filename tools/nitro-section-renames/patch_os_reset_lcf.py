@@ -40,4 +40,4 @@ def rewrite(text):
  return ''.join(rows)
 if __name__=='__main__':
  if len(sys.argv)!=2:raise SystemExit('usage: patch_os_reset_lcf.py MAIN.LCF')
- p=Path(sys.argv[1]);p.write_text(rewrite(p.read_text()))
+ p=Path(sys.argv[1]);p.write_text(rewrite(p.read_text(encoding='latin-1')), encoding='latin-1')
