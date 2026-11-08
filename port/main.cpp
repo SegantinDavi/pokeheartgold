@@ -1,6 +1,6 @@
 /**
  * @file main.cpp
- * @brief Native PC port standalone application entry point and SDL2 event loop.
+ * @brief Native PC port standalone application entry point and integrated SDL2 event loop.
  */
 
 #include <iostream>
@@ -13,6 +13,10 @@
 #include "port_common.h"
 #include "port_os.h"
 #include "port_vfs.h"
+#include "port_gx.h"
+#include "port_g3.h"
+#include "display/display_manager.h"
+#include "input/input_manager.h"
 
 namespace {
 
@@ -32,13 +36,13 @@ int main(int argc, char** argv) {
             std::cout << "Pokémon HeartGold Native PC Port\n"
                       << "Usage: " << argv[0] << " [options]\n\n"
                       << "Options:\n"
-                      << "  --test-run, --headless  Execute startup and event loop validation then exit\n"
+                      << "  --test-run, --headless  Execute startup and integrated loop validation then exit\n"
                       << "  --help, -h              Show this help message\n";
             return 0;
         }
     }
 
-    std::cout << "Starting Pokémon HeartGold Native PC Port...\n";
+    std::cout << "Starting Pokémon HeartGold Native PC Port (User Story 1: Side-by-Side Dual Screens)...\n";
 
     // Initialize SDL2
     Uint32 sdlFlags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER | SDL_INIT_TIMER;
@@ -69,7 +73,6 @@ int main(int argc, char** argv) {
     SDL_GLContext glContext = nullptr;
 
     if (testRun) {
-        // In test-run mode, try OpenGL window; if dummy driver lacks GL, fallback to headless window
         window = SDL_CreateWindow(
             "Pokémon HeartGold (Test Run)",
             SDL_WINDOWPOS_CENTERED,
@@ -114,42 +117,77 @@ int main(int argc, char** argv) {
         SDL_GL_SetSwapInterval(1); // Enable VSync
     }
 
-    std::cout << "Display initialized (" << DEFAULT_WINDOW_WIDTH << "x" << DEFAULT_WINDOW_HEIGHT << ").\n";
+    // Initialize Dual-Screen Display Manager
+    DisplayConfig dispConfig{};
+    dispConfig.mode = DISPLAY_LAYOUT_HORIZONTAL_DEFAULT;
+    dispConfig.windowWidth = DEFAULT_WINDOW_WIDTH;
+    dispConfig.windowHeight = DEFAULT_WINDOW_HEIGHT;
+    dispConfig.vsyncEnabled = true;
+    DisplayManager_Init(&dispConfig);
+
+    // Initialize Input, 2D and 3D graphics engines
+    NativeInput_Init();
+    GX_Init();
+    G3_Init();
+
+    std::cout << "Dual-screen display manager initialized (Horizontal Side-by-Side: "
+              << DEFAULT_WINDOW_WIDTH << "x" << DEFAULT_WINDOW_HEIGHT << ").\n";
 
     bool running = true;
     int frameCount = 0;
     auto lastFrameTime = std::chrono::steady_clock::now();
 
     while (running) {
+        // Poll input events (Keyboard, Gamepad, Mouse Touchscreen)
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
-            } else if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
+            } else if (event.type == SDL_WINDOWEVENT) {
+                if (event.window.event == SDL_WINDOWEVENT_RESIZED ||
+                    event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                    DisplayManager_OnWindowResize(event.window.data1, event.window.data2);
+                }
+            } else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+                bool down = (event.type == SDL_KEYDOWN);
+                if (down && event.key.keysym.sym == SDLK_ESCAPE) {
                     running = false;
-                } else if (event.key.keysym.sym == SDLK_F10) {
-                    std::cout << "[Display] Layout cycle requested (F10).\n";
-                } else if (event.key.keysym.sym == SDLK_F11) {
+                } else if (down && event.key.keysym.sym == SDLK_F10) {
+                    DisplayManager_CycleLayoutMode();
+                } else if (down && event.key.keysym.sym == SDLK_F11) {
                     Uint32 flags = SDL_GetWindowFlags(window);
                     bool isFullscreen = (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0;
                     SDL_SetWindowFullscreen(window, isFullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
                     std::cout << "[Display] Fullscreen toggled (F11): " << (!isFullscreen ? "ON" : "OFF") << "\n";
+                } else {
+                    NativeInput_ProcessKeyEvent(event.key.keysym.sym, down);
+                }
+            } else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
+                bool down = (event.type == SDL_MOUSEBUTTONDOWN);
+                if (event.button.button == SDL_BUTTON_LEFT) {
+                    NativeInput_ProcessMouseEvent(event.button.x, event.button.y, down);
+                }
+            } else if (event.type == SDL_MOUSEMOTION) {
+                if (event.motion.state & SDL_BUTTON_LMASK) {
+                    NativeInput_ProcessMouseEvent(event.motion.x, event.motion.y, true);
                 }
             }
         }
 
-        // Trigger virtual VBlank at DS frame pacing
-        NativeOS_TriggerVBlank();
+        // Render current 2D/3D graphics frame into dual viewports
+        GX_RenderFrame();
 
-        // Swap OpenGL window buffers if context is available
+        // Swap host window buffers if OpenGL context is available
         if (glContext) {
             SDL_GL_SwapWindow(window);
         }
+
+        // Trigger virtual VBlank at 59.8261 Hz pacing
+        NativeOS_TriggerVBlank();
         frameCount++;
 
-        if (testRun && frameCount >= 5) {
-            std::cout << "Test run completed (" << frameCount << " frames processed).\n";
+        if (testRun && frameCount >= 10) {
+            std::cout << "Integrated test run completed (" << frameCount << " frames processed).\n";
             running = false;
         }
 
@@ -165,6 +203,8 @@ int main(int argc, char** argv) {
     std::cout << "Shutting down application...\n";
 
     // Cleanup resources
+    NativeInput_Shutdown();
+    DisplayManager_Shutdown();
     if (glContext) {
         SDL_GL_DeleteContext(glContext);
     }

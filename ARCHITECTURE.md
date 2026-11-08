@@ -50,17 +50,27 @@ graph TD
     - `port_common.h`: Core display modes, viewport structures, math macros, and timing constants.
     - `port_os.h`: Native OS HAL definitions (threads, mutexes, ticks, IRQs, VBlank).
     - `port_vfs.h`: Native VFS contract and NitroFS stream APIs (`FS_OpenFile`, `FS_ReadFile`, `FS_SeekFile`, `FS_CloseFile`).
+    - `port_gx.h`: 2D Graphics Engine declarations, RGB555-to-RGBA conversion, and frame rendering.
+    - `port_g3.h`: 3D fixed-function geometry matrix modes, transforms, colors, and primitive dispatch.
     - `nitro/types.h`: 64-bit normalized exact-width types mapped to `<stdint.h>`.
+  - `port/display/`:
+    - `display_manager.h` / `display_manager.cpp`: Dual-screen compositor, aspect ratio pillarboxing/letterboxing, and mouse-to-touchscreen coordinate transformation.
+    - `framebuffer.h` / `framebuffer.cpp`: Dual 256x192 offscreen OpenGL render textures (Top FBO and Touchscreen FBO) with CPU pixel buffers.
+  - `port/input/`:
+    - `input_manager.h` / `input_manager.cpp`: Keyboard and SDL gamepad button mapping to `PAD_BUTTON_*` masks, plus mouse drag-to-touch digitizer coordinates.
   - `port/hal/os/`:
     - `os_thread.cpp`: C++17 threading and recursive mutex abstraction.
     - `os_time.cpp`: 33.513982 MHz virtual clock and microsecond/millisecond tick conversion.
     - `os_interrupt.cpp`: IRQ callback table, master interrupt flag, and 59.8261 Hz virtual VBlank unblocking.
   - `port/hal/fs/`:
     - `fs_vfs.cpp`: Virtual filesystem resolving Nintendo DS asset paths (`rom:/`, `data:/`, relative) to host `files/`.
-  - `port/display/`: Dual-screen OpenGL compositor and mouse-to-touchscreen coordinate transformation.
-  - `port/input/`: Keyboard, gamepad controller mapping, and digitizer emulation.
-  - `port/audio/`: PCM audio streaming and thread-safe circular ring buffer.
+  - `port/hal/gx/`:
+    - `gx_native.cpp`: 2D graphics engine emulation for BG and OAM planes, palettes, and frame buffers.
+  - `port/hal/g3/`:
+    - `g3_native.cpp`: 3D fixed-function geometry pipeline translating matrix modes, transforms, vertices, and primitives to OpenGL.
+  - `port/audio/`: PCM audio streaming and thread-safe circular ring buffer (Phase 5).
   - `port/tests/`:
     - `test_runner.h`: Header-only lightweight unit testing framework.
-    - `test_runner.cpp`: Automated unit test suite run via `ctest` (10 passing suites).
+    - `test_runner.cpp`: Automated unit test suite run via `ctest` (18 passing test suites).
+    - `test_coordinates.cpp`: Aspect ratio math and mouse-to-touchscreen coordinate translation test suites.
 - `lib/include/nitro/types.h`: Protected with `#ifdef PLATFORM_NATIVE` for 64-bit integer type normalization across compilers.

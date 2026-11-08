@@ -46,17 +46,17 @@
 
 ### Tests for User Story 1
 
-- [ ] T009 [P] [US1] Implement unit test for coordinate translation and aspect ratio math in port/tests/test_coordinates.cpp
+- [x] T009 [P] [US1] Implement unit test for coordinate translation and aspect ratio math in port/tests/test_coordinates.cpp
 
 ### Implementation for User Story 1
 
-- [ ] T010 [P] [US1] Implement dual offscreen framebuffer management (Top Screen FBO 256x192, Touchscreen FBO 256x192) in port/display/framebuffer.cpp
-- [ ] T011 [US1] Implement horizontal side-by-side dual-screen compositor and viewport scaling in port/display/display_manager.cpp
-- [ ] T012 [P] [US1] Implement keyboard and SDL gamepad button mapping to NitroSDK PAD_BUTTON_* masks in port/input/input_manager.cpp
-- [ ] T013 [US1] Implement mouse-to-touchscreen coordinate translation (DisplayManager_ScreenToTouchCoords) for horizontal mode in port/display/display_manager.cpp
-- [ ] T014 [US1] Implement 2D graphics engine emulation for BG and OAM in port/hal/gx/gx_native.cpp
-- [ ] T015 [US1] Implement basic 3D geometry fixed-function pipeline translation in port/hal/g3/g3_native.cpp
-- [ ] T016 [US1] Integrate main loop with graphics presentation, input polling, and VBlank pacing in port/main.cpp
+- [x] T010 [P] [US1] Implement dual offscreen framebuffer management (Top Screen FBO 256x192, Touchscreen FBO 256x192) in port/display/framebuffer.cpp
+- [x] T011 [US1] Implement horizontal side-by-side dual-screen compositor and viewport scaling in port/display/display_manager.cpp
+- [x] T012 [P] [US1] Implement keyboard and SDL gamepad button mapping to NitroSDK PAD_BUTTON_* masks in port/input/input_manager.cpp
+- [x] T013 [US1] Implement mouse-to-touchscreen coordinate translation (DisplayManager_ScreenToTouchCoords) for horizontal mode in port/display/display_manager.cpp
+- [x] T014 [US1] Implement 2D graphics engine emulation for BG and OAM in port/hal/gx/gx_native.cpp
+- [x] T015 [US1] Implement basic 3D geometry fixed-function pipeline translation in port/hal/g3/g3_native.cpp
+- [x] T016 [US1] Integrate main loop with graphics presentation, input polling, and VBlank pacing in port/main.cpp
 
 **Checkpoint**: User Story 1 is fully functional and independently testable as an MVP increment.
 

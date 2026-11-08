@@ -7,9 +7,127 @@
 #include "port_common.h"
 #include "port_os.h"
 #include "port_vfs.h"
+#include "port_gx.h"
+#include "port_g3.h"
+#include "input/input_manager.h"
+#include "display/display_manager.h"
+#include <SDL.h>
 #include <cstdint>
 #include <nitro/types.h>
 #include <atomic>
+
+TEST_CASE(G3_FixedPointAndMatrixMode) {
+    ASSERT_NEAR(1.0f, FX32_TO_FLOAT(4096), 0.0001f);
+    ASSERT_NEAR(0.5f, FX32_TO_FLOAT(2048), 0.0001f);
+    ASSERT_NEAR(-1.0f, FX32_TO_FLOAT(-4096), 0.0001f);
+
+    G3_Init();
+    ASSERT_EQ(GX_MTXMODE_POSITION_VECTOR, G3_GetMtxMode());
+
+    G3_MtxMode(GX_MTXMODE_PROJECTION);
+    ASSERT_EQ(GX_MTXMODE_PROJECTION, G3_GetMtxMode());
+
+    G3_MtxMode(GX_MTXMODE_POSITION_VECTOR);
+    ASSERT_EQ(GX_MTXMODE_POSITION_VECTOR, G3_GetMtxMode());
+
+    // Safe execution of geometry pipeline calls in headless mode
+    G3_Identity();
+    G3_Translate(4096, 2048, 0);
+    G3_Scale(4096, 4096, 4096);
+    G3_Color(0x7FFF);
+    G3_Begin(GX_BEGIN_TRIANGLES);
+    G3_Vtx(0, 0, 0);
+    G3_Vtx(4096, 0, 0);
+    G3_Vtx(0, 4096, 0);
+    G3_End();
+}
+
+TEST_CASE(GX_RGB555ColorConversion) {
+    // Pure Black (0x0000) -> 0xFF000000
+    uint32_t black = GX_RGB555ToRGBA(0x0000);
+    ASSERT_EQ(0xFF000000, black);
+
+    // Pure White (0x7FFF) -> 0xFFFFFFFF
+    uint32_t white = GX_RGB555ToRGBA(0x7FFF);
+    ASSERT_EQ(0xFFFFFFFF, white);
+
+    // Pure Red (0x001F) -> 0xFF0000FF
+    uint32_t red = GX_RGB555ToRGBA(0x001F);
+    ASSERT_EQ(0xFF0000FF, red);
+
+    // Pure Green (0x03E0) -> 0xFF00FF00
+    uint32_t green = GX_RGB555ToRGBA(0x03E0);
+    ASSERT_EQ(0xFF00FF00, green);
+
+    // Pure Blue (0x7C00) -> 0xFFFF0000
+    uint32_t blue = GX_RGB555ToRGBA(0x7C00);
+    ASSERT_EQ(0xFFFF0000, blue);
+}
+
+TEST_CASE(GX_ScreenBuffersAndClear) {
+    GX_Init();
+
+    uint32_t* top = GX_GetTopScreenPixels();
+    ASSERT_TRUE(top != nullptr);
+
+    GX_ClearTopScreen(0xFF0000FF);
+    ASSERT_EQ(0xFF0000FF, top[0]);
+    ASSERT_EQ(0xFF0000FF, top[NDS_SCREEN_WIDTH * NDS_SCREEN_HEIGHT - 1]);
+
+    uint32_t* touch = GX_GetTouchScreenPixels();
+    ASSERT_TRUE(touch != nullptr);
+
+    GX_ClearTouchScreen(0xFF00FF00);
+    ASSERT_EQ(0xFF00FF00, touch[0]);
+    ASSERT_EQ(0xFF00FF00, touch[NDS_SCREEN_WIDTH * NDS_SCREEN_HEIGHT - 1]);
+}
+
+TEST_CASE(Input_KeyboardMapping) {
+    NativeInput_Init();
+    ASSERT_EQ(0, NativeInput_GetPadButtons());
+
+    NativeInput_ProcessKeyEvent(SDLK_x, true);
+    ASSERT_TRUE(NativeInput_GetPadButtons() & NATIVE_PAD_BUTTON_A);
+
+    NativeInput_ProcessKeyEvent(SDLK_UP, true);
+    ASSERT_TRUE(NativeInput_GetPadButtons() & NATIVE_PAD_KEY_UP);
+    ASSERT_TRUE(NativeInput_GetPadButtons() & NATIVE_PAD_BUTTON_A);
+
+    NativeInput_ProcessKeyEvent(SDLK_x, false);
+    ASSERT_FALSE(NativeInput_GetPadButtons() & NATIVE_PAD_BUTTON_A);
+    ASSERT_TRUE(NativeInput_GetPadButtons() & NATIVE_PAD_KEY_UP);
+
+    NativeInput_ProcessKeyEvent(SDLK_UP, false);
+    ASSERT_EQ(0, NativeInput_GetPadButtons());
+    NativeInput_Shutdown();
+}
+
+TEST_CASE(Input_MouseTouchMapping) {
+    DisplayConfig config{};
+    config.mode = DISPLAY_LAYOUT_HORIZONTAL_DEFAULT;
+    config.windowWidth = 1280;
+    config.windowHeight = 720;
+    DisplayManager_Init(&config);
+    NativeInput_Init();
+
+    // Click at center of touchscreen (960, 360)
+    NativeInput_ProcessMouseEvent(960, 360, true);
+    NativeTouchState state{};
+    NativeInput_GetTouchState(&state);
+
+    ASSERT_TRUE(state.touching);
+    ASSERT_EQ(128, state.screenX);
+    ASSERT_EQ(96, state.screenY);
+    ASSERT_TRUE(state.rawX > 0);
+    ASSERT_TRUE(state.rawY > 0);
+
+    // Release mouse
+    NativeInput_ProcessMouseEvent(960, 360, false);
+    NativeInput_GetTouchState(&state);
+    ASSERT_FALSE(state.touching);
+
+    NativeInput_Shutdown();
+}
 
 TEST_CASE(VFS_PathResolution) {
     NativeVFS_Init("files");
