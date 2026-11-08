@@ -16,9 +16,9 @@
 
 **Purpose**: Project initialization, build system setup, and common definitions.
 
-- [ ] T001 Setup native build configuration in CMakeLists.txt with SDL2 and OpenGL 3.3 Core dependencies
-- [ ] T002 [P] Create port directory layout and common definitions in port/include/port_common.h
-- [ ] T003 [P] Create unit test harness and runner in port/tests/test_runner.cpp
+- [x] T001 Setup native build configuration in CMakeLists.txt with SDL2 and OpenGL 3.3 Core dependencies
+- [x] T002 [P] Create port directory layout and common definitions in port/include/port_common.h
+- [x] T003 [P] Create unit test harness and runner in port/tests/test_runner.cpp
 
 ---
 
@@ -28,11 +28,11 @@
 
 **⚠️ CRITICAL**: Foundational tasks block all user story gameplay features.
 
-- [ ] T004 Implement native OS threading and mutex abstraction in port/hal/os/os_thread.cpp
-- [ ] T005 [P] Implement native virtual clock and 59.8261 Hz VBlank interrupt handling in port/hal/os/os_time.cpp and port/hal/os/os_interrupt.cpp
-- [ ] T006 [P] Implement Virtual Filesystem (VFS) to resolve and stream ROM assets from files/ in port/hal/fs/fs_vfs.cpp
-- [ ] T007 [P] Implement 64-bit type normalization guards in lib/include/nitro/types.h
-- [ ] T008 Implement native entry point skeleton and SDL2 event loop in port/main.cpp
+- [x] T004 Implement native OS threading and mutex abstraction in port/hal/os/os_thread.cpp
+- [x] T005 [P] Implement native virtual clock and 59.8261 Hz VBlank interrupt handling in port/hal/os/os_time.cpp and port/hal/os/os_interrupt.cpp
+- [x] T006 [P] Implement Virtual Filesystem (VFS) to resolve and stream ROM assets from files/ in port/hal/fs/fs_vfs.cpp
+- [x] T007 [P] Implement 64-bit type normalization guards in lib/include/nitro/types.h
+- [x] T008 Implement native entry point skeleton and SDL2 event loop in port/main.cpp
 
 **Checkpoint**: Foundation ready - User Story 1 (MVP) implementation can now proceed.
 

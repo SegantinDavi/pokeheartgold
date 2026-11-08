@@ -1,40 +1,89 @@
-cmake_minimum_required (VERSION 3.15)
-set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
-set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
-set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
-# Override the default system to cross-compile for ARM processors
-set(CMAKE_SYSTEM_NAME Linux)
-set(CMAKE_SYSTEM_PROCESSOR ARM)
-project(PokeHeartGold)
+cmake_minimum_required(VERSION 3.22)
+project(pokeheartgold LANGUAGES C CXX)
 
-enable_language(ASM)
+# Language standards
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(APPLE)
-    include_directories(/usr/local/include)
-endif(APPLE)
+# Platform definition
+add_compile_definitions(PLATFORM_NATIVE=1)
 
-# TODO: Create custom commands
-SET(GAME_SRC_DIR ${CMAKE_SOURCE_DIR}/src/)
-SET(GAME_ASM_DIR ${CMAKE_SOURCE_DIR}/asm/)
-SET(LIBS_SRC_DIR ${CMAKE_SOURCE_DIR}/lib/)
-SET(LIBS_ASM_DIR ${CMAKE_SOURCE_DIR}/lib/)
-file(GLOB_RECURSE C_SOURCES_GAME "${GAME_SRC_DIR}/*.c")
-# file(GLOB_RECURSE C_SOURCES_LIBS "${LIBS_SRC_DIR}/*.c")
-# file(GLOB_RECURSE CXX_SOURCES_LIBS "${LIBS_SRC_DIR}/*.cpp")
-file(GLOB_RECURSE ASM_SOURCES_GAME "${GAME_ASM_DIR}/*.s")
-# file(GLOB_RECURSE ASM_SOURCES_LIBS "${LIBS_ASM_DIR}/*.s")
-set(SOURCES ${C_SOURCES_GAME} ${ASM_SOURCES_GAME})
+# Compiler warnings and options
+if(MSVC)
+    add_compile_options(/W3 /permissive-)
+else()
+    add_compile_options(-Wall -Wextra -Wno-unused-parameter)
+endif()
 
-list(JOIN SOURCES "\n" sources_join)
+# Dependencies: SDL2 and OpenGL
+find_package(SDL2 REQUIRED)
+find_package(OpenGL REQUIRED)
 
-foreach(SRC IN LISTS C_SOURCES_GAME C_SOURCES_LIBS)
-    # add_custom_command(OUTPUT ${CMAKE_BUILD_DIR}/${SRC}.o)
-endforeach()
+# Normalize SDL2 imported target
+if(TARGET SDL2::SDL2)
+    set(PORT_SDL2_TARGET SDL2::SDL2)
+else()
+    add_library(PORT_SDL2 INTERFACE)
+    target_include_directories(PORT_SDL2 INTERFACE ${SDL2_INCLUDE_DIRS})
+    target_link_libraries(PORT_SDL2 INTERFACE ${SDL2_LIBRARIES})
+    set(PORT_SDL2_TARGET PORT_SDL2)
+endif()
 
-add_executable(PokeHeartGold ${SOURCES})
-target_include_directories(PokeHeartGold PUBLIC src include files ${CMAKE_SOURCE_DIR}/lib/include ${CMAKE_SOURCE_DIR}/lib/include/cw ${CMAKE_SOURCE_DIR}/lib/include/nitro ${CMAKE_SOURCE_DIR}/lib/include/nnsys ${CMAKE_SOURCE_DIR}/lib/include/nitro/os include/library)
-target_compile_definitions(PokeHeartGold PUBLIC __CLION_IDE__ SDK_ARM9 SDK_CW SDK_CODE_ARM SDK_TS _NITRO __arm PLATFORM_INTRINSIC_FUNCTION_BIT_CLZ32=__builtin_clz wchar_t=__WCHAR_TYPE__ PM_KEEP_ASSERTS)
-target_compile_options(PokeHeartGold PRIVATE -Wimplicit -Wno-endif-labels -fms-extensions -nostdinc -Wno-builtin-declaration-mismatch -Wno-implicit-int -Wno-multichar -Wno-address-of-packed-member -mcpu=arm946e-s)
-target_compile_features(PokeHeartGold PRIVATE c_std_99 cxx_std_98)
+# Common include directories for native port
+set(PORT_COMMON_INCLUDES
+    ${CMAKE_CURRENT_SOURCE_DIR}/port/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/port
+)
 
-add_subdirectory(tools)
+# Automated testing
+enable_testing()
+
+file(GLOB_RECURSE PORT_TEST_SOURCES
+    "port/tests/*.cpp"
+    "port/tests/*.c"
+)
+
+file(GLOB_RECURSE PORT_HAL_SOURCES
+    "port/hal/*.cpp"
+    "port/hal/*.c"
+    "port/display/*.cpp"
+    "port/display/*.c"
+    "port/input/*.cpp"
+    "port/input/*.c"
+    "port/audio/*.cpp"
+    "port/audio/*.c"
+)
+
+if(PORT_TEST_SOURCES)
+    add_executable(port_tests ${PORT_TEST_SOURCES} ${PORT_HAL_SOURCES})
+    target_include_directories(port_tests PRIVATE ${PORT_COMMON_INCLUDES})
+    target_link_libraries(port_tests PRIVATE ${PORT_SDL2_TARGET} OpenGL::GL)
+    if(UNIX AND NOT APPLE)
+        target_link_libraries(port_tests PRIVATE pthread dl m)
+    endif()
+    add_test(NAME port_tests COMMAND port_tests)
+endif()
+
+# Main game executable
+file(GLOB_RECURSE PORT_SOURCES
+    "port/*.cpp"
+    "port/*.c"
+)
+list(FILTER PORT_SOURCES EXCLUDE REGEX "port/tests/")
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/port/main.cpp")
+    add_executable(pokeheartgold ${PORT_SOURCES})
+    target_include_directories(pokeheartgold PRIVATE ${PORT_COMMON_INCLUDES})
+    target_link_libraries(pokeheartgold PRIVATE ${PORT_SDL2_TARGET} OpenGL::GL)
+    if(UNIX AND NOT APPLE)
+        target_link_libraries(pokeheartgold PRIVATE pthread dl m)
+    endif()
+endif()
+
+# Optional decompilation tools (requires libpng / zlib host packages)
+option(BUILD_DECOMP_TOOLS "Build ROM decompilation tools" OFF)
+if(BUILD_DECOMP_TOOLS)
+    add_subdirectory(tools)
+endif()
