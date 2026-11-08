@@ -11,10 +11,47 @@
 #include "port_g3.h"
 #include "input/input_manager.h"
 #include "display/display_manager.h"
+#include "display/display_config.h"
 #include <SDL.h>
 #include <cstdint>
+#include <cstdio>
 #include <nitro/types.h>
 #include <atomic>
+
+TEST_CASE(DisplayConfig_DefaultsAndPersistence) {
+    DisplayConfig cfg{};
+    DisplayConfig_SetDefaults(&cfg);
+
+    ASSERT_EQ(DISPLAY_LAYOUT_HORIZONTAL_DEFAULT, cfg.mode);
+    ASSERT_EQ(1280, cfg.windowWidth);
+    ASSERT_EQ(720, cfg.windowHeight);
+    ASSERT_FALSE(cfg.isFullscreen);
+    ASSERT_TRUE(cfg.vsyncEnabled);
+
+    // Modify and save
+    cfg.mode = DISPLAY_LAYOUT_VERTICAL_CLASSIC;
+    cfg.windowWidth = 1600;
+    cfg.windowHeight = 900;
+    cfg.isFullscreen = true;
+    cfg.vsyncEnabled = false;
+
+    const char* testPath = "/tmp/test_display_config.ini";
+    bool saved = DisplayConfig_Save(&cfg, testPath);
+    ASSERT_TRUE(saved);
+
+    // Load back
+    DisplayConfig loadedCfg{};
+    bool loaded = DisplayConfig_Load(&loadedCfg, testPath);
+    ASSERT_TRUE(loaded);
+
+    ASSERT_EQ(DISPLAY_LAYOUT_VERTICAL_CLASSIC, loadedCfg.mode);
+    ASSERT_EQ(1600, loadedCfg.windowWidth);
+    ASSERT_EQ(900, loadedCfg.windowHeight);
+    ASSERT_TRUE(loadedCfg.isFullscreen);
+    ASSERT_FALSE(loadedCfg.vsyncEnabled);
+
+    remove(testPath);
+}
 
 TEST_CASE(G3_FixedPointAndMatrixMode) {
     ASSERT_NEAR(1.0f, FX32_TO_FLOAT(4096), 0.0001f);

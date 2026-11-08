@@ -10,8 +10,9 @@ The native PC port project recompiles the original C decompilation of Pokémon H
 graph TD
     subgraph Host Application [Host Desktop OS]
         Main[port/main.cpp - SDL2 Event Loop]
-        DisplayMgr[port/display/ - Compositor & Viewports]
-        InputMgr[port/input/ - Key/Pad/Touch Translation]
+        DisplayMgr[port/display/ - Compositor & 4 Layout Viewports]
+        DisplayConfig[port/display/ - Configuration & INI Persistence]
+        InputMgr[port/input/ - Key/Pad/Touch Translation & F10 Cycling]
         AudioBackend[port/audio/ - SDL Audio Ring Buffer]
     end
 
@@ -30,6 +31,7 @@ graph TD
     end
 
     Main --> DisplayMgr
+    Main --> DisplayConfig
     Main --> InputMgr
     Main --> AudioBackend
     Main --> HAL_OS
@@ -45,7 +47,7 @@ graph TD
 ## Subsystem Layout & Current Implementation Status
 
 - `port/`: Desktop platform host implementation and Hardware Abstraction Layer (HAL).
-  - `port/main.cpp`: Standalone executable entry point with SDL2 lifecycle, window creation, OpenGL 3.3 Core context, and 59.8261 Hz frame loop.
+  - `port/main.cpp`: Standalone executable entry point with SDL2 lifecycle, window creation, OpenGL 3.3 Core context, preference loading, and 59.8261 Hz frame loop.
   - `port/include/`:
     - `port_common.h`: Core display modes, viewport structures, math macros, and timing constants.
     - `port_os.h`: Native OS HAL definitions (threads, mutexes, ticks, IRQs, VBlank).
@@ -54,10 +56,11 @@ graph TD
     - `port_g3.h`: 3D fixed-function geometry matrix modes, transforms, colors, and primitive dispatch.
     - `nitro/types.h`: 64-bit normalized exact-width types mapped to `<stdint.h>`.
   - `port/display/`:
-    - `display_manager.h` / `display_manager.cpp`: Dual-screen compositor, aspect ratio pillarboxing/letterboxing, and mouse-to-touchscreen coordinate transformation.
+    - `display_manager.h` / `display_manager.cpp`: Dual-screen compositor supporting all 4 layout modes (Horizontal Default, Swapped Horizontal, Vertical Classic DS, Swapped Vertical), pillarboxing/letterboxing, and dynamic mouse-to-touchscreen coordinate transformation.
+    - `display_config.h` / `display_config.cpp`: Display preferences persistence saving/loading layout mode, resolution, fullscreen, and vsync to `display_config.ini`.
     - `framebuffer.h` / `framebuffer.cpp`: Dual 256x192 offscreen OpenGL render textures (Top FBO and Touchscreen FBO) with CPU pixel buffers.
   - `port/input/`:
-    - `input_manager.h` / `input_manager.cpp`: Keyboard and SDL gamepad button mapping to `PAD_BUTTON_*` masks, plus mouse drag-to-touch digitizer coordinates.
+    - `input_manager.h` / `input_manager.cpp`: Keyboard and SDL gamepad button mapping to `PAD_BUTTON_*` masks, layout cycling hotkey (`F10`), and mouse drag-to-touch digitizer coordinates.
   - `port/hal/os/`:
     - `os_thread.cpp`: C++17 threading and recursive mutex abstraction.
     - `os_time.cpp`: 33.513982 MHz virtual clock and microsecond/millisecond tick conversion.
@@ -71,6 +74,7 @@ graph TD
   - `port/audio/`: PCM audio streaming and thread-safe circular ring buffer (Phase 5).
   - `port/tests/`:
     - `test_runner.h`: Header-only lightweight unit testing framework.
-    - `test_runner.cpp`: Automated unit test suite run via `ctest` (18 passing test suites).
+    - `test_runner.cpp`: Automated unit test suite run via `ctest` (25 passing test suites).
     - `test_coordinates.cpp`: Aspect ratio math and mouse-to-touchscreen coordinate translation test suites.
+    - `test_layouts.cpp`: Viewport calculations and mouse mapping for all 4 layout configurations.
 - `lib/include/nitro/types.h`: Protected with `#ifdef PLATFORM_NATIVE` for 64-bit integer type normalization across compilers.

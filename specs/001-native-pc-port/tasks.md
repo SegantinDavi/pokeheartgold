@@ -70,14 +70,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T017 [P] [US2] Implement unit tests for all 4 layout viewport calculations and mouse mapping in port/tests/test_layouts.cpp
+- [x] T017 [P] [US2] Implement unit tests for all 4 layout viewport calculations and mouse mapping in port/tests/test_layouts.cpp
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Extend DisplayManager to support all 4 layout modes with letterboxing/pillarboxing in port/display/display_manager.cpp
-- [ ] T019 [US2] Implement layout cycling function and F10 hotkey detection in port/input/input_manager.cpp
-- [ ] T020 [US2] Extend coordinate transform across all 4 layout modes and dynamic window scales in port/display/display_manager.cpp
-- [ ] T021 [US2] Implement display preference persistence for layout mode and window size in port/display/display_config.cpp
+- [x] T018 [US2] Extend DisplayManager to support all 4 layout modes with letterboxing/pillarboxing in port/display/display_manager.cpp
+- [x] T019 [US2] Implement layout cycling function and F10 hotkey detection in port/input/input_manager.cpp
+- [x] T020 [US2] Extend coordinate transform across all 4 layout modes and dynamic window scales in port/display/display_manager.cpp
+- [x] T021 [US2] Implement display preference persistence for layout mode and window size in port/display/display_config.cpp
 
 **Checkpoint**: User Stories 1 and 2 operate seamlessly together with dynamic layout reconfiguration.
 

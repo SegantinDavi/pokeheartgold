@@ -16,6 +16,7 @@
 #include "port_gx.h"
 #include "port_g3.h"
 #include "display/display_manager.h"
+#include "display/display_config.h"
 #include "input/input_manager.h"
 
 namespace {
@@ -64,7 +65,19 @@ int main(int argc, char** argv) {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
+    // Load or initialize display configuration preferences
+    DisplayConfig dispConfig{};
+    if (!DisplayConfig_Load(&dispConfig, DEFAULT_DISPLAY_CONFIG_PATH)) {
+        DisplayConfig_SetDefaults(&dispConfig);
+    }
+
+    int windowWidth = dispConfig.windowWidth;
+    int windowHeight = dispConfig.windowHeight;
+
     Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+    if (dispConfig.isFullscreen) {
+        windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    }
     if (testRun) {
         windowFlags |= SDL_WINDOW_HIDDEN;
     }
@@ -77,8 +90,8 @@ int main(int argc, char** argv) {
             "Pokémon HeartGold (Test Run)",
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
-            DEFAULT_WINDOW_WIDTH,
-            DEFAULT_WINDOW_HEIGHT,
+            windowWidth,
+            windowHeight,
             windowFlags
         );
         if (window) {
@@ -88,8 +101,8 @@ int main(int argc, char** argv) {
                 "Pokémon HeartGold (Test Run)",
                 SDL_WINDOWPOS_CENTERED,
                 SDL_WINDOWPOS_CENTERED,
-                DEFAULT_WINDOW_WIDTH,
-                DEFAULT_WINDOW_HEIGHT,
+                windowWidth,
+                windowHeight,
                 SDL_WINDOW_HIDDEN
             );
         }
@@ -98,8 +111,8 @@ int main(int argc, char** argv) {
             "Pokémon HeartGold (Native PC Port)",
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
-            DEFAULT_WINDOW_WIDTH,
-            DEFAULT_WINDOW_HEIGHT,
+            windowWidth,
+            windowHeight,
             windowFlags
         );
         if (window) {
@@ -114,15 +127,10 @@ int main(int argc, char** argv) {
     }
 
     if (glContext) {
-        SDL_GL_SetSwapInterval(1); // Enable VSync
+        SDL_GL_SetSwapInterval(dispConfig.vsyncEnabled ? 1 : 0);
     }
 
-    // Initialize Dual-Screen Display Manager
-    DisplayConfig dispConfig{};
-    dispConfig.mode = DISPLAY_LAYOUT_HORIZONTAL_DEFAULT;
-    dispConfig.windowWidth = DEFAULT_WINDOW_WIDTH;
-    dispConfig.windowHeight = DEFAULT_WINDOW_HEIGHT;
-    dispConfig.vsyncEnabled = true;
+    // Initialize Dual-Screen Display Manager with loaded preferences
     DisplayManager_Init(&dispConfig);
 
     // Initialize Input, 2D and 3D graphics engines
@@ -201,6 +209,12 @@ int main(int argc, char** argv) {
     }
 
     std::cout << "Shutting down application...\n";
+
+    // Save display preferences
+    dispConfig.mode = DisplayManager_GetLayoutMode();
+    if (!testRun) {
+        DisplayConfig_Save(&dispConfig, DEFAULT_DISPLAY_CONFIG_PATH);
+    }
 
     // Cleanup resources
     NativeInput_Shutdown();
