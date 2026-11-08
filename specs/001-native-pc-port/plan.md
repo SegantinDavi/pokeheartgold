@@ -71,6 +71,8 @@ port/                    # Native PC Hardware Abstraction Layer & Application En
 ├── display/             # Dual-screen display manager & OpenGL compositor
 │   ├── display_manager.h
 │   ├── display_manager.cpp
+│   ├── display_config.cpp
+│   ├── framebuffer.cpp
 │   └── shaders.h
 ├── input/               # Keyboard, Gamepad, and Mouse touch translation
 │   ├── input_manager.h
@@ -82,19 +84,24 @@ port/                    # Native PC Hardware Abstraction Layer & Application En
 │   ├── os/              # Threading, mutexes, virtual clock & VBlank IRQ
 │   │   ├── os_thread.cpp
 │   │   ├── os_time.cpp
-│   │   └── os_interrupt.cpp
+│   │   ├── os_interrupt.cpp
+│   │   └── overlay_manager.cpp
 │   ├── fs/              # Virtual filesystem mapping host files/
 │   │   └── fs_vfs.cpp
 │   ├── card/            # Persistent 512KB save game manager
 │   │   └── card_backup.cpp
 │   ├── gx/              # 2D graphics engine emulation & framebuffers
 │   │   └── gx_native.cpp
-│   └── g3/              # 3D fixed-function geometry translation
-│       └── g3_native.cpp
+│   ├── g3/              # 3D fixed-function geometry translation
+│   │   └── g3_native.cpp
+│   └── snd/             # NitroSDK sound subsystem integration
+│       └── snd_native.cpp
 ├── include/             # Port-specific internal headers
 │   └── port_common.h
 └── tests/               # Unit and regression tests for HAL components
+    ├── test_runner.cpp
     ├── test_coordinates.cpp
+    ├── test_layouts.cpp
     ├── test_ring_buffer.cpp
     └── test_save_backup.cpp
 ```

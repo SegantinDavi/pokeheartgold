@@ -29,7 +29,7 @@
 **⚠️ CRITICAL**: Foundational tasks block all user story gameplay features.
 
 - [ ] T004 Implement native OS threading and mutex abstraction in port/hal/os/os_thread.cpp
-- [ ] T005 [P] Implement native virtual clock and 59.8261 Hz VBlank interrupt timer in port/hal/os/os_time.cpp
+- [ ] T005 [P] Implement native virtual clock and 59.8261 Hz VBlank interrupt handling in port/hal/os/os_time.cpp and port/hal/os/os_interrupt.cpp
 - [ ] T006 [P] Implement Virtual Filesystem (VFS) to resolve and stream ROM assets from files/ in port/hal/fs/fs_vfs.cpp
 - [ ] T007 [P] Implement 64-bit type normalization guards in lib/include/nitro/types.h
 - [ ] T008 Implement native entry point skeleton and SDL2 event loop in port/main.cpp
@@ -53,7 +53,7 @@
 - [ ] T010 [P] [US1] Implement dual offscreen framebuffer management (Top Screen FBO 256x192, Touchscreen FBO 256x192) in port/display/framebuffer.cpp
 - [ ] T011 [US1] Implement horizontal side-by-side dual-screen compositor and viewport scaling in port/display/display_manager.cpp
 - [ ] T012 [P] [US1] Implement keyboard and SDL gamepad button mapping to NitroSDK PAD_BUTTON_* masks in port/input/input_manager.cpp
-- [ ] T013 [US1] Implement mouse-to-touchscreen coordinate translation for right-hand viewport in port/input/touch_translator.cpp
+- [ ] T013 [US1] Implement mouse-to-touchscreen coordinate translation (DisplayManager_ScreenToTouchCoords) for horizontal mode in port/display/display_manager.cpp
 - [ ] T014 [US1] Implement 2D graphics engine emulation for BG and OAM in port/hal/gx/gx_native.cpp
 - [ ] T015 [US1] Implement basic 3D geometry fixed-function pipeline translation in port/hal/g3/g3_native.cpp
 - [ ] T016 [US1] Integrate main loop with graphics presentation, input polling, and VBlank pacing in port/main.cpp
@@ -76,7 +76,7 @@
 
 - [ ] T018 [US2] Extend DisplayManager to support all 4 layout modes with letterboxing/pillarboxing in port/display/display_manager.cpp
 - [ ] T019 [US2] Implement layout cycling function and F10 hotkey detection in port/input/input_manager.cpp
-- [ ] T020 [US2] Implement generalized coordinate transform across all layout modes and window scales in port/display/display_manager.cpp
+- [ ] T020 [US2] Extend coordinate transform across all 4 layout modes and dynamic window scales in port/display/display_manager.cpp
 - [ ] T021 [US2] Implement display preference persistence for layout mode and window size in port/display/display_config.cpp
 
 **Checkpoint**: User Stories 1 and 2 operate seamlessly together with dynamic layout reconfiguration.
@@ -92,12 +92,12 @@
 ### Tests for User Story 3
 
 - [ ] T022 [P] [US3] Implement unit test for audio circular ring buffer in port/tests/test_ring_buffer.cpp
-- [ ] T025 [P] [US3] Implement unit test for save backup reading/writing in port/tests/test_save_backup.cpp
+- [ ] T023 [P] [US3] Implement unit test for save backup reading/writing in port/tests/test_save_backup.cpp
 
 ### Implementation for User Story 3
 
-- [ ] T023 [P] [US3] Implement thread-safe PCM audio ring buffer and SDL audio callback backend in port/audio/audio_backend.cpp
-- [ ] T024 [US3] Connect NitroSDK sound subsystem output to native audio stream in port/hal/snd/snd_native.cpp
+- [ ] T024 [P] [US3] Implement thread-safe PCM audio ring buffer and SDL audio callback backend in port/audio/audio_backend.cpp
+- [ ] T025 [US3] Connect NitroSDK sound subsystem output to native audio stream in port/hal/snd/snd_native.cpp
 - [ ] T026 [US3] Implement persistent 512KB save game manager with atomic flush in port/hal/card/card_backup.cpp
 
 **Checkpoint**: All three user stories are complete, delivering full standalone gameplay with graphics, audio, configurable displays, and persistence.

@@ -58,7 +58,7 @@ A player embarks on an adventure, saves their progress using the in-game save fe
 ### Edge Cases
 
 - **Window Resizing and Scaling**: When the user resizes the window, both screen viewports must maintain their fixed 4:3 aspect ratio with appropriate pillarboxing/letterboxing, and touch coordinate normalization must adapt proportionally.
-- **Mouse Drag Leaving Viewport**: If the player begins a touch drag on the touchscreen and the cursor leaves the touchscreen bounds, the touch must either clamp to the nearest screen edge or release touch contact consistently with hardware digitizer behavior.
+- **Mouse Drag Leaving Viewport**: If the player begins a touch drag on the touchscreen and the cursor leaves the touchscreen bounds, the touch must release contact (`touching = false`) consistently with hardware digitizer behavior.
 - **Layout Switch Mid-Animation / Mid-3D Render**: Switching display layouts while a 3D cutscene or battle transition is active must not crash the renderer or corrupt graphics buffers.
 - **Missing or Corrupted Save File**: If a save file cannot be read or is invalid, the game must report the issue gracefully and offer to start a new game without crashing.
 - **Missing Asset Files**: If extracted game assets or data archives are missing from the asset directory, the executable must log clear error diagnostics detailing the missing assets.
@@ -79,7 +79,7 @@ A player embarks on an adventure, saves their progress using the in-game save fe
 - **FR-004**: System MUST dynamically translate mouse pointer events into Nintendo DS touchscreen coordinates [0..255, 0..191] corresponding to the active position, scale, and aspect ratio of the touchscreen viewport in any layout mode.
 - **FR-005**: System MUST allow runtime switching of screen layouts through user-configurable shortcuts or settings without interrupting game execution.
 - **FR-006**: System MUST persist display preferences (chosen layout mode, window dimensions, fullscreen state) in a local configuration file.
-- **FR-007**: System MUST provide customizable input mapping for standard Nintendo DS buttons (A, B, X, Y, D-Pad, L, R, Start, Select) supporting keyboard and modern game controllers.
+- **FR-007**: System MUST provide pre-configured input mapping for standard Nintendo DS buttons (A, B, X, Y, D-Pad, L, R, Start, Select) supporting keyboard and modern game controllers, with an architecture extensible for user-customizable bindings.
 - **FR-008**: System MUST stream Nintendo DS audio channels and sound sequences to the host audio output device in stereo.
 - **FR-009**: System MUST read game assets (graphics, sound archives, text, maps) directly from the local filesystem or packaged asset directories.
 - **FR-010**: System MUST persist and restore game progress to and from persistent storage on the host filesystem using standard 512KB save file format.
