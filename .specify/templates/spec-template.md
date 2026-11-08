@@ -1,0 +1,1 @@
+../../.agents/skills/speckit.specify/templates/spec-template.md

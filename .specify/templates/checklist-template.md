@@ -1,0 +1,1 @@
+../../.agents/skills/speckit.checklist/templates/checklist-template.md

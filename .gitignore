@@ -20,6 +20,7 @@ cmake-build-debug/
 
 # "cmake.buildDirectory": "${workspaceFolder}/build-cmake-${buildType}"
 build-cmake-*
+build-native*
 
 # ROM
 *.srl
@@ -91,6 +92,7 @@ diff.txt
 # Save files
 *.dsv
 *.sav
+display_config.ini
 
 # Savestate files
 *.ds[0-9]
@@ -108,3 +110,6 @@ __pycache__
 .local-tools/
 .venv/
 *.pyc
+
+# agents
+.agents
