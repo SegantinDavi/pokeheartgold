@@ -143,3 +143,27 @@ TEST_CASE(Layout_CycleModesSequence) {
     DisplayManager_CycleLayoutMode();
     ASSERT_EQ(DISPLAY_LAYOUT_HORIZONTAL_DEFAULT, DisplayManager_GetLayoutMode());
 }
+
+TEST_CASE(Layout_FullscreenToggle) {
+    DisplayConfig config{};
+    config.isFullscreen = false;
+    DisplayManager_Init(&config);
+
+    ASSERT_FALSE(DisplayManager_IsFullscreen());
+
+    // Toggle to true without SDL_Window (headless/mock)
+    bool fs = DisplayManager_ToggleFullscreen(nullptr);
+    ASSERT_TRUE(fs);
+    ASSERT_TRUE(DisplayManager_IsFullscreen());
+
+    // Toggle back to false
+    fs = DisplayManager_ToggleFullscreen(nullptr);
+    ASSERT_FALSE(fs);
+    ASSERT_FALSE(DisplayManager_IsFullscreen());
+
+    // Explicit set
+    DisplayManager_SetFullscreen(nullptr, true);
+    ASSERT_TRUE(DisplayManager_IsFullscreen());
+    DisplayManager_SetFullscreen(nullptr, false);
+    ASSERT_FALSE(DisplayManager_IsFullscreen());
+}

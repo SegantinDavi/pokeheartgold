@@ -54,9 +54,10 @@ graph TD
     - `port_vfs.h`: Native VFS contract and NitroFS stream APIs (`FS_OpenFile`, `FS_ReadFile`, `FS_SeekFile`, `FS_CloseFile`).
     - `port_gx.h`: 2D Graphics Engine declarations, RGB555-to-RGBA conversion, and frame rendering.
     - `port_g3.h`: 3D fixed-function geometry matrix modes, transforms, colors, and primitive dispatch.
+    - `port_overlay.h`: Overlay descriptor table, symbol dispatch, and NitroSDK `FS_LoadOverlay` emulation.
     - `nitro/types.h`: 64-bit normalized exact-width types mapped to `<stdint.h>`.
   - `port/display/`:
-    - `display_manager.h` / `display_manager.cpp`: Dual-screen compositor supporting all 4 layout modes (Horizontal Default, Swapped Horizontal, Vertical Classic DS, Swapped Vertical), pillarboxing/letterboxing, and dynamic mouse-to-touchscreen coordinate transformation.
+    - `display_manager.h` / `display_manager.cpp`: Dual-screen compositor supporting all 4 layout modes (Horizontal Default, Swapped Horizontal, Vertical Classic DS, Swapped Vertical), borderless fullscreen toggle (`F11`), pillarboxing/letterboxing, and dynamic mouse-to-touchscreen coordinate transformation.
     - `display_config.h` / `display_config.cpp`: Display preferences persistence saving/loading layout mode, resolution, fullscreen, and vsync to `display_config.ini`.
     - `framebuffer.h` / `framebuffer.cpp`: Dual 256x192 offscreen OpenGL render textures (Top FBO and Touchscreen FBO) with CPU pixel buffers.
   - `port/input/`:
@@ -65,6 +66,7 @@ graph TD
     - `os_thread.cpp`: C++17 threading and recursive mutex abstraction.
     - `os_time.cpp`: 33.513982 MHz virtual clock and microsecond/millisecond tick conversion.
     - `os_interrupt.cpp`: IRQ callback table, master interrupt flag, and 59.8261 Hz virtual VBlank unblocking.
+    - `overlay_manager.cpp`: Monolithic overlay registry, static symbol dispatch table, and `FS_LoadOverlay` emulation.
   - `port/hal/fs/`:
     - `fs_vfs.cpp`: Virtual filesystem resolving Nintendo DS asset paths (`rom:/`, `data:/`, relative) to host `files/`.
   - `port/hal/gx/`:
@@ -79,9 +81,10 @@ graph TD
     - `snd_native.cpp`: NitroSDK `SND_` subsystem emulation with master volume scaling and routing to native audio output.
   - `port/tests/`:
     - `test_runner.h`: Header-only lightweight unit testing framework.
-    - `test_runner.cpp`: Automated unit test suite run via `ctest` (32 passing test suites).
+    - `test_runner.cpp`: Automated unit test suite run via `ctest` (35 passing test suites).
     - `test_coordinates.cpp`: Aspect ratio math and mouse-to-touchscreen coordinate translation test suites.
-    - `test_layouts.cpp`: Viewport calculations and mouse mapping for all 4 layout configurations.
+    - `test_layouts.cpp`: Viewport calculations, mouse mapping for all 4 layout configurations, and fullscreen toggle.
+    - `test_overlay_manager.cpp`: Monolithic overlay registry, static symbol dispatch, and NitroSDK `FS_LoadOverlay` emulation.
     - `test_ring_buffer.cpp`: Circular audio ring buffer write/read, wraparound, and underrun silence handling.
     - `test_save_backup.cpp`: 512KB save game initialization (0xFF erase state), write/read persistence, and async callbacks.
 - `lib/include/nitro/types.h`: Protected with `#ifdef PLATFORM_NATIVE` for 64-bit integer type normalization across compilers.

@@ -108,10 +108,10 @@
 
 **Purpose**: Optimization, build automation, overlay loading, and end-to-end verification.
 
-- [ ] T027 [P] Implement overlay monolithic initialization table and symbol dispatch in port/hal/os/overlay_manager.cpp
-- [ ] T028 [P] Add fullscreen toggle hotkey (F11) with borderless display mode in port/display/display_manager.cpp
-- [ ] T029 Execute full build validation and run automated test suite via ctest in build-native/
-- [ ] T030 Validate end-to-end user workflows per specs/001-native-pc-port/quickstart.md
+- [x] T027 [P] Implement overlay monolithic initialization table and symbol dispatch in port/hal/os/overlay_manager.cpp
+- [x] T028 [P] Add fullscreen toggle hotkey (F11) with borderless display mode in port/display/display_manager.cpp
+- [x] T029 Execute full build validation and run automated test suite via ctest in build-native/
+- [x] T030 Validate end-to-end user workflows per specs/001-native-pc-port/quickstart.md
 
 ---
 

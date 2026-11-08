@@ -173,6 +173,24 @@ void DisplayManager_OnWindowResize(int32_t newWidth, int32_t newHeight) {
     );
 }
 
+bool DisplayManager_ToggleFullscreen(void* sdlWindow) {
+    return DisplayManager_SetFullscreen(sdlWindow, !gActiveConfig.isFullscreen);
+}
+
+bool DisplayManager_SetFullscreen(void* sdlWindow, bool fullscreen) {
+    gActiveConfig.isFullscreen = fullscreen;
+    if (sdlWindow) {
+        SDL_Window* win = static_cast<SDL_Window*>(sdlWindow);
+        uint32_t flags = fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
+        SDL_SetWindowFullscreen(win, flags);
+    }
+    return gActiveConfig.isFullscreen;
+}
+
+bool DisplayManager_IsFullscreen(void) {
+    return gActiveConfig.isFullscreen;
+}
+
 bool DisplayManager_ScreenToTouchCoords(int32_t hostX, int32_t hostY, uint8_t* outTouchX, uint8_t* outTouchY) {
     const ViewportRect& vp = gActiveConfig.touchViewport;
     if (hostX < vp.x || hostX >= (vp.x + vp.width) ||

@@ -167,10 +167,8 @@ int main(int argc, char** argv) {
                 } else if (down && event.key.keysym.sym == SDLK_F10) {
                     DisplayManager_CycleLayoutMode();
                 } else if (down && event.key.keysym.sym == SDLK_F11) {
-                    Uint32 flags = SDL_GetWindowFlags(window);
-                    bool isFullscreen = (flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0;
-                    SDL_SetWindowFullscreen(window, isFullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
-                    std::cout << "[Display] Fullscreen toggled (F11): " << (!isFullscreen ? "ON" : "OFF") << "\n";
+                    bool fs = DisplayManager_ToggleFullscreen(window);
+                    std::cout << "[Display] Fullscreen toggled (F11): " << (fs ? "ON" : "OFF") << "\n";
                 } else {
                     NativeInput_ProcessKeyEvent(event.key.keysym.sym, down);
                 }
