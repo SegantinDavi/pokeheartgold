@@ -34,5 +34,5 @@ if __name__ == '__main__':
     if len(sys.argv) != 2:
         raise SystemExit('usage: patch_os_thread_lcf.py MAIN.LCF')
     path = Path(sys.argv[1])
-    original = path.read_text()
-    path.write_text(rewrite(original))
+    original = path.read_text(encoding='latin-1')
+    path.write_text(rewrite(original), encoding='latin-1')
