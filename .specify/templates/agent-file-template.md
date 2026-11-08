@@ -1,0 +1,1 @@
+../../.agents/skills/speckit.plan/templates/agent-file-template.md
