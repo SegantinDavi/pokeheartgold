@@ -15,6 +15,8 @@
 #include "port_vfs.h"
 #include "port_gx.h"
 #include "port_g3.h"
+#include "port_card.h"
+#include "port_snd.h"
 #include "display/display_manager.h"
 #include "display/display_config.h"
 #include "input/input_manager.h"
@@ -54,6 +56,8 @@ int main(int argc, char** argv) {
 
     // Initialize Native HAL Subsystems
     NativeVFS_Init("files");
+    CARD_Init();
+    SND_Init();
     OS_InitTick();
     OS_InitThread();
     OS_InitIrqTable();
@@ -219,6 +223,8 @@ int main(int argc, char** argv) {
     // Cleanup resources
     NativeInput_Shutdown();
     DisplayManager_Shutdown();
+    SND_Shutdown();
+    NativeCard_Shutdown();
     if (glContext) {
         SDL_GL_DeleteContext(glContext);
     }

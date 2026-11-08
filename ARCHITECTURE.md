@@ -71,10 +71,17 @@ graph TD
     - `gx_native.cpp`: 2D graphics engine emulation for BG and OAM planes, palettes, and frame buffers.
   - `port/hal/g3/`:
     - `g3_native.cpp`: 3D fixed-function geometry pipeline translating matrix modes, transforms, vertices, and primitives to OpenGL.
-  - `port/audio/`: PCM audio streaming and thread-safe circular ring buffer (Phase 5).
+  - `port/audio/`:
+    - `audio_backend.h` / `audio_backend.cpp`: Lock-free circular PCM audio ring buffer (`PortAudio::AudioRingBuffer`) and SDL Audio streaming callback backend.
+  - `port/hal/card/`:
+    - `card_backup.cpp`: 512KB persistent save game manager with atomic file flushing (`pokemon_heartgold.sav`) and NitroSDK `CARD_` emulation.
+  - `port/hal/snd/`:
+    - `snd_native.cpp`: NitroSDK `SND_` subsystem emulation with master volume scaling and routing to native audio output.
   - `port/tests/`:
     - `test_runner.h`: Header-only lightweight unit testing framework.
-    - `test_runner.cpp`: Automated unit test suite run via `ctest` (25 passing test suites).
+    - `test_runner.cpp`: Automated unit test suite run via `ctest` (32 passing test suites).
     - `test_coordinates.cpp`: Aspect ratio math and mouse-to-touchscreen coordinate translation test suites.
     - `test_layouts.cpp`: Viewport calculations and mouse mapping for all 4 layout configurations.
+    - `test_ring_buffer.cpp`: Circular audio ring buffer write/read, wraparound, and underrun silence handling.
+    - `test_save_backup.cpp`: 512KB save game initialization (0xFF erase state), write/read persistence, and async callbacks.
 - `lib/include/nitro/types.h`: Protected with `#ifdef PLATFORM_NATIVE` for 64-bit integer type normalization across compilers.

@@ -91,14 +91,14 @@
 
 ### Tests for User Story 3
 
-- [ ] T022 [P] [US3] Implement unit test for audio circular ring buffer in port/tests/test_ring_buffer.cpp
-- [ ] T023 [P] [US3] Implement unit test for save backup reading/writing in port/tests/test_save_backup.cpp
+- [x] T022 [P] [US3] Implement unit test for audio circular ring buffer in port/tests/test_ring_buffer.cpp
+- [x] T023 [P] [US3] Implement unit test for save backup reading/writing in port/tests/test_save_backup.cpp
 
 ### Implementation for User Story 3
 
-- [ ] T024 [P] [US3] Implement thread-safe PCM audio ring buffer and SDL audio callback backend in port/audio/audio_backend.cpp
-- [ ] T025 [US3] Connect NitroSDK sound subsystem output to native audio stream in port/hal/snd/snd_native.cpp
-- [ ] T026 [US3] Implement persistent 512KB save game manager with atomic flush in port/hal/card/card_backup.cpp
+- [x] T024 [P] [US3] Implement thread-safe PCM audio ring buffer and SDL audio callback backend in port/audio/audio_backend.cpp
+- [x] T025 [US3] Connect NitroSDK sound subsystem output to native audio stream in port/hal/snd/snd_native.cpp
+- [x] T026 [US3] Implement persistent 512KB save game manager with atomic flush in port/hal/card/card_backup.cpp
 
 **Checkpoint**: All three user stories are complete, delivering full standalone gameplay with graphics, audio, configurable displays, and persistence.
 

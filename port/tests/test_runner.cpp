@@ -9,6 +9,9 @@
 #include "port_vfs.h"
 #include "port_gx.h"
 #include "port_g3.h"
+#include "port_card.h"
+#include "port_snd.h"
+#include "audio/audio_backend.h"
 #include "input/input_manager.h"
 #include "display/display_manager.h"
 #include "display/display_config.h"
@@ -17,6 +20,27 @@
 #include <cstdio>
 #include <nitro/types.h>
 #include <atomic>
+
+TEST_CASE(SND_VolumeAndAudioRouting) {
+    SND_Init();
+    ASSERT_EQ(SND_MASTER_VOLUME_MAX, SND_GetMasterVolume());
+
+    SND_SetMasterVolume(64);
+    ASSERT_EQ(64, SND_GetMasterVolume());
+
+    SND_SetMasterVolume(-5);
+    ASSERT_EQ(0, SND_GetMasterVolume());
+
+    SND_SetMasterVolume(250);
+    ASSERT_EQ(SND_MASTER_VOLUME_MAX, SND_GetMasterVolume());
+
+    // Push audio samples and check queued frames
+    std::vector<int16_t> samples(128, 500); // 64 stereo frames
+    SND_ProcessAudio(samples.data(), 64);
+    ASSERT_TRUE(NativeAudio_GetQueuedFrames() >= 64);
+
+    SND_Shutdown();
+}
 
 TEST_CASE(DisplayConfig_DefaultsAndPersistence) {
     DisplayConfig cfg{};
