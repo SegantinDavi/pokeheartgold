@@ -62,10 +62,10 @@ int main(int argc, char** argv) {
     OS_InitThread();
     OS_InitIrqTable();
 
-    // Set OpenGL 3.3 Core profile attributes
+    // Set OpenGL profile attributes (Compatibility profile ensures textured quads render across all drivers)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
@@ -121,6 +121,10 @@ int main(int argc, char** argv) {
         );
         if (window) {
             glContext = SDL_GL_CreateContext(window);
+            if (!glContext) {
+                SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
+                glContext = SDL_GL_CreateContext(window);
+            }
         }
     }
 
@@ -183,6 +187,22 @@ int main(int argc, char** argv) {
                 }
             }
         }
+
+        // Query active touchscreen input state
+        NativeTouchState touch{};
+        NativeInput_GetTouchState(&touch);
+
+        const char* layoutName = "SIDE-BY-SIDE";
+        switch (DisplayManager_GetLayoutMode()) {
+            case DISPLAY_LAYOUT_HORIZONTAL_DEFAULT: layoutName = "HORIZONTAL (SIDE-BY-SIDE)"; break;
+            case DISPLAY_LAYOUT_HORIZONTAL_SWAPPED: layoutName = "SWAPPED HORIZONTAL"; break;
+            case DISPLAY_LAYOUT_VERTICAL_CLASSIC:   layoutName = "VERTICAL (CLASSIC DS)"; break;
+            case DISPLAY_LAYOUT_VERTICAL_SWAPPED:   layoutName = "SWAPPED VERTICAL"; break;
+            default: break;
+        }
+
+        // Render interactive dual-screen presentation card & touch feedback
+        GX_DrawTestPattern(frameCount, touch.screenX, touch.screenY, touch.touching, layoutName);
 
         // Render current 2D/3D graphics frame into dual viewports
         GX_RenderFrame();

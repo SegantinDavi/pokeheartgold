@@ -57,6 +57,7 @@ void GX_LoadBG3Scr(const void* src, u32 offset, u32 sz);
 
 /* Frame Compositing & Pixel Buffer Access */
 void GX_RenderFrame(void);
+void GX_DrawTestPattern(int frameCounter, uint8_t touchX, uint8_t touchY, bool touching, const char* layoutName);
 uint32_t* GX_GetTopScreenPixels(void);
 uint32_t* GX_GetTouchScreenPixels(void);
 void GX_ClearTopScreen(uint32_t color);
