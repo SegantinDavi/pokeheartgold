@@ -37,7 +37,7 @@ Integrate the decompiled Nintendo DS game engine (`src/`) with the native Hardwa
 | Principle / Rule | Requirement | Status | Notes |
 |---|---|:---:|---|
 | **English Language Standard** | All identifiers, code, comments, documentation, and commits in English | **PASS** | Fully followed across all specs, contracts, and code. |
-| **Modularity & Non-Destructive Changes** | Native platform code in `port/`, original `src/` untouched unless gated | **PASS** | Shims placed in `port/include/` (`nitro.h`, `MSL.h`, `nnsys.h`); `src/` files compiled cleanly without edits. |
+| **Modularity & Non-Destructive Changes** | Native platform code in `port/`, original `src/` untouched unless gated | **PASS** | Shims placed in `port/include/` (`nitro.h`, `MSL.h`, `nnsys.h`); original `src/` files preserved with only minimal `#ifdef PLATFORM_NATIVE` guards strictly for 64-bit portability where necessary (`system.c`, `main.c`). |
 | **Memory Safety & 64-Bit Compatibility** | Normalized types, no 32-bit pointer truncation, safe pointer math | **PASS** | Exact fixed-width types used (`u32`, `s32`, `uintptr_t`) under `PLATFORM_NATIVE`. |
 | **Documentation Preservation** | Preserve decompilation comments and document new HAL interfaces | **PASS** | All new contracts and shims fully documented with Doxygen comments. |
 | **Small, Testable Increments** | Work in phased, independently testable slices | **PASS** | Phased progression: Window Icon -> SDK Shims -> Game Thread -> VBlank Sync -> Graphics Bridge. |
@@ -84,11 +84,13 @@ port/
 │   │   ├── game_core.cpp      # GameCore_Start(), NitroMain thread spawn, and shutdown
 │   │   └── os_interrupt.cpp   # VBlank condition variable barrier unblocking OS_WaitIrq
 │   └── gx/
+│       ├── gx_native.cpp      # 2D/3D framebuffer composite routing to dual viewports
 │       └── hw_registers.cpp   # Hardware register storage & VRAM buffer mappings
 ├── main.cpp                   # Updated to spawn game core thread and update inputs
 └── tests/
     ├── test_rom_icon.cpp      # Unit test for 32x32 icon decoding and pixel dimensions
-    └── test_game_core.cpp     # Unit test for game thread startup, VBlank wait, and stop
+    ├── test_game_core.cpp     # Unit test for game thread startup, VBlank wait, and stop
+    └── test_engine_sync.cpp   # Unit test for input bridge (ReadKeypadAndTouchpad) and VBlank pacing
 ```
 
 ---

@@ -32,11 +32,12 @@ typedef struct RomIcon {
 RomIcon RomIcon_Load(const char* assetPath);
 
 /**
- * @brief Applies the ROM icon to the active SDL window.
+ * @brief Applies the ROM icon to the active SDL window (implemented in display manager).
  * @param window Pointer to SDL_Window.
  * @return True if icon was successfully set.
  */
 bool RomIcon_ApplyToWindow(void* window);
+bool DisplayManager_SetWindowIcon(void* window);
 
 #ifdef __cplusplus
 }

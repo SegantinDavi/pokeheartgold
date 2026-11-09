@@ -37,7 +37,7 @@ As a player on desktop (Linux/Windows/macOS), I want the application window and 
 
 1. **Given** the application starts, **When** the host SDL2 window is created, **Then** the 32x32 icon from ROM assets (`heartgold.us/icon.png` or decoded RGBA icon buffer) is loaded and applied via `SDL_SetWindowIcon`.
 2. **Given** the window is displayed on the host operating system, **When** viewed in the taskbar or application switcher, **Then** the icon appears with clean transparency and correct aspect ratio.
-3. **Given** the asset file is missing or corrupted, **When** the window initializes, **Then** the application falls back gracefully to a built-in embedded icon without crashing.
+3. **Given** the application starts, **When** the host SDL2 window initializes, **Then** the application applies the embedded 32x32 RGBA icon buffer (with graceful fallback to default window decoration if icon setting fails without crashing).
 
 ---
 
@@ -81,10 +81,10 @@ As a player interacting with the game, I want my keyboard, gamepad, and mouse-to
 
 ### Key Entities
 
-- **`RomIconData`**: 32x32 RGBA pixel buffer decoded from `heartgold.us/icon.png` or embedded fallback data, used for host window icon decoration.
-- **`GameCoreThread`**: Dedicated background thread managing the execution cycle of `NitroMain()` and the primary engine state loop.
-- **`HardwareRegisterMap`**: Memory-mapped or structured representation of Nintendo DS I/O registers (`reg_GX_*`, `reg_G2_*`, VRAM banks) backed by native host buffers.
-- **`FrameSyncBarrier`**: Synchronization primitive synchronizing the game core thread's VBlank wait with the host window's 59.8261 Hz compositor refresh.
+- **`RomIcon`**: 32x32 RGBA pixel buffer (1,024 32-bit little-endian `0xAABBGGRR` values) decoded from ROM metadata (`heartgold.us/icon.nbfc` and `icon.nbfp`) or embedded fallback data, used for host window icon decoration.
+- **`GameCoreState`**: Lifecycle controller and dedicated background thread managing the execution cycle of `NitroMain()`, atomic run states, VBlank wait synchronization, and frame counters.
+- **`HardwareIoRegisters`**: Structured representation of Nintendo DS memory-mapped I/O registers (`reg_GX_*`, `reg_G2_*`, VRAM banks) backed by native host buffers.
+- **`InputBridgeState`**: Host input state mapping keyboard, gamepad, and mouse-touch events directly into the game's input structures (`ReadKeypadAndTouchpad`).
 
 ---
 

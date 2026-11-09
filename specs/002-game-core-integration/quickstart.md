@@ -40,7 +40,7 @@ Run the compiled executable directly from the repository root:
    - The engine loads overlays dynamically and transitions to the intro sequence and title screen.
 3. **Dual Viewports & Controls**:
    - Top Screen and Touchscreen display the rendered game graphics.
-   - Press `F10` to cycle display layouts (Side-by-Side, Swapped, Vertical DS Clássico).
+   - Press `F10` to cycle display layouts (Side-by-Side, Swapped, Vertical Classic DS).
    - Press `F11` to toggle fullscreen.
    - Use keyboard arrow keys and `X` / `Z` / `S` / `A` for DS buttons, and mouse left-click/drag on the bottom screen for touchscreen input.
 4. **Clean Exit**:

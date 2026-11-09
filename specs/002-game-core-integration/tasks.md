@@ -27,7 +27,7 @@
 
 ## Phase 3: User Story 2 - Official ROM Window Icon & Title Branding (Priority: P2)
 
-**Goal**: Extract and decode the official 32x32 Pokémon HeartGold cartridge icon from ROM metadata and apply it to the desktop window and taskbar.
+**Goal**: Extract and decode the official 32x32 Pokémon HeartGold cartridge icon from ROM metadata and apply it to the desktop window and taskbar. *(Note: US2 is sequenced in Phase 3 before US1 as an immediate, self-contained quick-win before the extensive engine bootstrap in Phase 4).*
 
 **Independent Test**: Launch `./build-native/pokeheartgold`, inspect the window titlebar and OS taskbar, and verify that the 32x32 HeartGold icon is rendered sharply with proper transparency.
 
@@ -38,7 +38,7 @@
 ### Implementation for User Story 2
 
 - [ ] T007 [P] [US2] Generate embedded 32x32 RGBA icon array from heartgold.us/icon.nbfc and icon.nbfp in port/display/rom_icon_data.h
-- [ ] T008 [US2] Implement DisplayManager_SetWindowIcon with SDL_SetWindowIcon in port/display/display_manager.cpp
+- [ ] T008 [US2] Implement DisplayManager_SetWindowIcon / RomIcon_ApplyToWindow with SDL_SetWindowIcon in port/display/display_manager.cpp
 - [ ] T009 [US2] Integrate window icon application and update title to Pokémon HeartGold in port/main.cpp
 
 **Checkpoint**: Application window and taskbar display the authentic 32x32 HeartGold icon on launch.
@@ -53,13 +53,13 @@
 
 ### Tests for User Story 1
 
-- [ ] T010 [P] [US1] Implement unit test for game core thread startup, state transitions, and shutdown in port/tests/test_game_core.cpp
+- [ ] T010 [P] [US1] Implement unit test for game core thread startup (<2.0s per SC-002), state transitions, and shutdown in port/tests/test_game_core.cpp
 
 ### Implementation for User Story 1
 
 - [ ] T011 [US1] Adapt core decompiled engine sources in src/system.c, src/main.c, and memory heaps for 64-bit desktop compilation under PLATFORM_NATIVE
 - [ ] T012 [US1] Wire GameCore_Start to invoke NitroMain on the dedicated background thread in port/hal/os/game_core.cpp
-- [ ] T013 [US1] Integrate GameCore_Start on startup and clean GameCore_Stop on SDL_QUIT/ESC in port/main.cpp
+- [ ] T013 [US1] Integrate GameCore_Start on startup and clean GameCore_Stop with save data flush (NativeCard_FlushBackup / pokemon_heartgold.sav) on SDL_QUIT/ESC in port/main.cpp
 
 **Checkpoint**: Game engine loop boots, runs synchronously on its dedicated thread, and cleanly shuts down on window close.
 
@@ -73,7 +73,7 @@
 
 ### Tests for User Story 3
 
-- [ ] T014 [P] [US3] Implement unit test for input bridge (ReadKeypadAndTouchpad) and VBlank pacing in port/tests/test_engine_sync.cpp
+- [ ] T014 [P] [US3] Implement unit test for input bridge (ReadKeypadAndTouchpad) and VBlank pacing (<16ms frame-boundary sync per SC-004) in port/tests/test_engine_sync.cpp
 
 ### Implementation for User Story 3
 
@@ -89,9 +89,9 @@
 
 **Purpose**: Optimization, build verification, memory safety, and regression checks.
 
-- [ ] T018 [P] Audit thread shutdown for clean resource deallocation and zero memory leaks
+- [ ] T018 [P] Audit thread shutdown for clean resource deallocation, save backup flushing, and zero memory leaks
 - [ ] T019 Execute full build validation and run automated test suite via ctest in build-native/
-- [ ] T020 Validate interactive startup, icon display, and controls per specs/002-game-core-integration/quickstart.md
+- [ ] T020 Validate interactive startup, working-directory independent path resolution, icon display, and controls per specs/002-game-core-integration/quickstart.md
 
 ---
 
