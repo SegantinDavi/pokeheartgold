@@ -35,6 +35,7 @@ endif()
 set(PORT_COMMON_INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}/port/include
     ${CMAKE_CURRENT_SOURCE_DIR}/port
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 # Automated testing

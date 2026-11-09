@@ -10,9 +10,9 @@
 
 **Purpose**: Configure CMake to include decompiled engine sources and supply Nintendo DS SDK forwarder shims.
 
-- [ ] T001 Update root CMakeLists.txt to compile decompiled engine modules and add port/include to search paths
-- [ ] T002 [P] Create Nintendo DS SDK forwarder shims in port/include/MSL.h, port/include/nitro.h, port/include/nnsys.h, and port/include/nitro/code16.h
-- [ ] T003 [P] Implement virtual hardware memory arena and emulated I/O registers in port/include/port_hw_registers.h and port/hal/gx/hw_registers.cpp
+- [X] T001 Update root CMakeLists.txt to compile decompiled engine modules and add port/include to search paths
+- [X] T002 [P] Create Nintendo DS SDK forwarder shims in port/include/MSL.h, port/include/nitro.h, port/include/nnsys.h, and port/include/nitro/code16.h
+- [X] T003 [P] Implement virtual hardware memory arena and emulated I/O registers in port/include/port_hw_registers.h and port/hal/gx/hw_registers.cpp
 
 ---
 
@@ -20,8 +20,8 @@
 
 **Purpose**: Core synchronization barriers and game thread execution primitives.
 
-- [ ] T004 Implement VBlank condition-variable barrier and thread synchronization in port/hal/os/os_interrupt.cpp
-- [ ] T005 [P] Implement GameCore thread manager and lifecycle controller in port/include/port_game_core.h and port/hal/os/game_core.cpp
+- [X] T004 Implement VBlank condition-variable barrier and thread synchronization in port/hal/os/os_interrupt.cpp
+- [X] T005 [P] Implement GameCore thread manager and lifecycle controller in port/include/port_game_core.h and port/hal/os/game_core.cpp
 
 ---
 
@@ -33,13 +33,13 @@
 
 ### Tests for User Story 2
 
-- [ ] T006 [P] [US2] Implement unit test for 32x32 ROM icon decoding and dimensions in port/tests/test_rom_icon.cpp
+- [X] T006 [P] [US2] Implement unit test for 32x32 ROM icon decoding and dimensions in port/tests/test_rom_icon.cpp
 
 ### Implementation for User Story 2
 
-- [ ] T007 [P] [US2] Generate embedded 32x32 RGBA icon array from heartgold.us/icon.nbfc and icon.nbfp in port/display/rom_icon_data.h
-- [ ] T008 [US2] Implement DisplayManager_SetWindowIcon / RomIcon_ApplyToWindow with SDL_SetWindowIcon in port/display/display_manager.cpp
-- [ ] T009 [US2] Integrate window icon application and update title to Pokémon HeartGold in port/main.cpp
+- [X] T007 [P] [US2] Generate embedded 32x32 RGBA icon array from heartgold.us/icon.nbfc and icon.nbfp in port/display/rom_icon_data.h
+- [X] T008 [US2] Implement DisplayManager_SetWindowIcon / RomIcon_ApplyToWindow with SDL_SetWindowIcon in port/display/display_manager.cpp
+- [X] T009 [US2] Integrate window icon application and update title to Pokémon HeartGold in port/main.cpp
 
 **Checkpoint**: Application window and taskbar display the authentic 32x32 HeartGold icon on launch.
 

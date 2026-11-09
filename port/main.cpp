@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
         }
     } else {
         window = SDL_CreateWindow(
-            "Pokémon HeartGold (Native PC Port)",
+            "Pokémon HeartGold",
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
             windowWidth,
@@ -132,6 +132,11 @@ int main(int argc, char** argv) {
         std::cerr << "Failed to create SDL window: " << SDL_GetError() << "\n";
         SDL_Quit();
         return 1;
+    }
+
+    // Apply official 32x32 Pokémon HeartGold ROM icon to desktop window and taskbar
+    if (DisplayManager_SetWindowIcon(window)) {
+        std::cout << "Applied official 32x32 Pokémon HeartGold ROM window icon.\n";
     }
 
     if (glContext) {

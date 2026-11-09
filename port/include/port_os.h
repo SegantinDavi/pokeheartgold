@@ -143,6 +143,8 @@ u32 OS_GetVBlankCount(void);
 
 /* Host trigger to simulate virtual 59.8261 Hz VBlank */
 void NativeOS_TriggerVBlank(void);
+void NativeOS_InterruptVBlankWait(void);
+bool NativeOS_IsQuitRequested(void);
 
 #ifdef __cplusplus
 }

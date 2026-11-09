@@ -17,14 +17,14 @@ extern "C" {
 
 /* RGB555 to RGBA conversion helper */
 static inline uint32_t GX_RGB555ToRGBA(uint16_t rgb555) {
-    uint8_t r = static_cast<uint8_t>(((rgb555 >> 0) & 0x1F) * 255 / 31);
-    uint8_t g = static_cast<uint8_t>(((rgb555 >> 5) & 0x1F) * 255 / 31);
-    uint8_t b = static_cast<uint8_t>(((rgb555 >> 10) & 0x1F) * 255 / 31);
+    uint8_t r = (uint8_t)(((rgb555 >> 0) & 0x1F) * 255 / 31);
+    uint8_t g = (uint8_t)(((rgb555 >> 5) & 0x1F) * 255 / 31);
+    uint8_t b = (uint8_t)(((rgb555 >> 10) & 0x1F) * 255 / 31);
     uint8_t a = 0xFF;
-    return (static_cast<uint32_t>(a) << 24) |
-           (static_cast<uint32_t>(b) << 16) |
-           (static_cast<uint32_t>(g) << 8)  |
-           (static_cast<uint32_t>(r) << 0);
+    return ((uint32_t)a << 24) |
+           ((uint32_t)b << 16) |
+           ((uint32_t)g << 8)  |
+           ((uint32_t)r << 0);
 }
 
 /* Initialization & Display Control */
