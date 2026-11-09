@@ -16,7 +16,12 @@ extern "C" {
 typedef u32 FSOverlayID;
 
 #define    FS_EXTERN_OVERLAY(name)    extern u32 SDK_OVERLAY_ ## name ## _ID[1]
+#ifdef PLATFORM_NATIVE
+#include <stdint.h>
+#define    FS_OVERLAY_ID(name)    ((FSOverlayID)(uintptr_t)&(SDK_OVERLAY_ ## name ## _ID))
+#else
 #define    FS_OVERLAY_ID(name)    ((u32)&(SDK_OVERLAY_ ## name ## _ID))
+#endif
 
 typedef void (*FSOverlayInitFunc)(void);
 

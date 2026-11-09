@@ -9,16 +9,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <nitro/types.h>
+#include <nitro/fx.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef s32 fx32;
-typedef s16 fx16;
-
-#define FX32_SHIFT 12
-#define FX32_TO_FLOAT(x) (static_cast<float>(x) / static_cast<float>(1 << FX32_SHIFT))
+#ifndef FX32_TO_FLOAT
+#define FX32_TO_FLOAT(x) ((float)(x) / (float)(1 << FX32_SHIFT))
+#endif
 
 typedef enum {
     GX_MTXMODE_PROJECTION      = 0,

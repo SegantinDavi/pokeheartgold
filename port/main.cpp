@@ -7,11 +7,13 @@
 #include <string>
 #include <chrono>
 #include <thread>
+#include <sys/stat.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
 
 #include "port_common.h"
 #include "port_os.h"
+#include "port_game_core.h"
 #include "port_vfs.h"
 #include "port_gx.h"
 #include "port_g3.h"
@@ -54,8 +56,26 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // Initialize Native HAL Subsystems
-    NativeVFS_Init("files");
+    // Initialize Native HAL Subsystems with working-directory independent path resolution
+    std::string assetDir = "files";
+    struct stat st;
+    if (stat("files", &st) != 0) {
+        if (stat("../files", &st) == 0) {
+            assetDir = "../files";
+        } else {
+            char* basePath = SDL_GetBasePath();
+            if (basePath) {
+                std::string base(basePath);
+                SDL_free(basePath);
+                if (stat((base + "files").c_str(), &st) == 0) {
+                    assetDir = base + "files";
+                } else if (stat((base + "../files").c_str(), &st) == 0) {
+                    assetDir = base + "../files";
+                }
+            }
+        }
+    }
+    NativeVFS_Init(assetDir.c_str());
     CARD_Init();
     SND_Init();
     OS_InitTick();
@@ -112,7 +132,7 @@ int main(int argc, char** argv) {
         }
     } else {
         window = SDL_CreateWindow(
-            "Pokémon HeartGold (Native PC Port)",
+            "Pokémon HeartGold",
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
             windowWidth,
@@ -134,6 +154,11 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    // Apply official 32x32 Pokémon HeartGold ROM icon to desktop window and taskbar
+    if (DisplayManager_SetWindowIcon(window)) {
+        std::cout << "Applied official 32x32 Pokémon HeartGold ROM window icon.\n";
+    }
+
     if (glContext) {
         SDL_GL_SetSwapInterval(dispConfig.vsyncEnabled ? 1 : 0);
     }
@@ -149,9 +174,13 @@ int main(int argc, char** argv) {
     std::cout << "Dual-screen display manager initialized (Horizontal Side-by-Side: "
               << DEFAULT_WINDOW_WIDTH << "x" << DEFAULT_WINDOW_HEIGHT << ").\n";
 
+    // Launch game core thread
+    GameCore_Start();
+
     bool running = true;
     int frameCount = 0;
-    auto lastFrameTime = std::chrono::steady_clock::now();
+    auto nextFrameTime = std::chrono::steady_clock::now() +
+        std::chrono::duration<double, std::milli>(TARGET_FRAME_TIME_MS);
 
     while (running) {
         // Poll input events (Keyboard, Gamepad, Mouse Touchscreen)
@@ -191,6 +220,8 @@ int main(int argc, char** argv) {
         // Query active touchscreen input state
         NativeTouchState touch{};
         NativeInput_GetTouchState(&touch);
+        uint16_t padButtons = NativeInput_GetPadButtons();
+        GameCore_UpdateInput(padButtons, touch.screenX, touch.screenY, touch.touching);
 
         const char* layoutName = "SIDE-BY-SIDE";
         switch (DisplayManager_GetLayoutMode()) {
@@ -202,7 +233,9 @@ int main(int argc, char** argv) {
         }
 
         // Render interactive dual-screen presentation card & touch feedback
-        GX_DrawTestPattern(frameCount, touch.screenX, touch.screenY, touch.touching, layoutName);
+        if (GX_IsTestPatternEnabled()) {
+            GX_DrawTestPattern(frameCount, touch.screenX, touch.screenY, touch.touching, layoutName);
+        }
 
         // Render current 2D/3D graphics frame into dual viewports
         GX_RenderFrame();
@@ -221,16 +254,20 @@ int main(int argc, char** argv) {
             running = false;
         }
 
-        // Frame rate limiter (~59.8261 Hz)
+        // Frame rate limiter locked to 59.8261 Hz without time drift (SC-003)
+        std::this_thread::sleep_until(nextFrameTime);
+        nextFrameTime += std::chrono::duration<double, std::milli>(TARGET_FRAME_TIME_MS);
         auto now = std::chrono::steady_clock::now();
-        double elapsedMs = std::chrono::duration<double, std::milli>(now - lastFrameTime).count();
-        if (elapsedMs < TARGET_FRAME_TIME_MS) {
-            std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(TARGET_FRAME_TIME_MS - elapsedMs));
+        if (nextFrameTime < now) {
+            nextFrameTime = now + std::chrono::duration<double, std::milli>(TARGET_FRAME_TIME_MS);
         }
-        lastFrameTime = std::chrono::steady_clock::now();
     }
 
     std::cout << "Shutting down application...\n";
+
+    // Stop game core thread and flush persistent save data
+    GameCore_Stop(1000);
+    NativeCard_FlushBackup();
 
     // Save display preferences
     dispConfig.mode = DisplayManager_GetLayoutMode();

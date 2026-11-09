@@ -34,6 +34,8 @@ void DisplayManager_CalculateViewports(int32_t windowWidth, int32_t windowHeight
 bool DisplayManager_ToggleFullscreen(void* sdlWindow);
 bool DisplayManager_SetFullscreen(void* sdlWindow, bool fullscreen);
 bool DisplayManager_IsFullscreen(void);
+bool DisplayManager_SetWindowIcon(void* sdlWindow);
+bool RomIcon_ApplyToWindow(void* sdlWindow);
 void DisplayManager_PresentFrame(const void* topScreenPixels, const void* touchScreenPixels);
 void DisplayManager_Shutdown(void);
 

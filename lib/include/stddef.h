@@ -1,3 +1,7 @@
+#ifdef PLATFORM_NATIVE
+#include_next <stddef.h>
+#else
+
 #ifndef MSL_STDDEF_H_
 #define MSL_STDDEF_H_
 
@@ -12,3 +16,5 @@ _MSL_END_EXTERN_C
 _MSL_END_NAMESPACE_STD
 
 #endif //MSL_STDDEF_H_
+
+#endif // PLATFORM_NATIVE

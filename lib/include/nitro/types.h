@@ -7,6 +7,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+#if __cplusplus >= 201103L
+#define register
+#endif
+#endif
+
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;

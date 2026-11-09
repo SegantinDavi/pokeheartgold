@@ -66,6 +66,7 @@ extern void SDK_SECTION_ARENA_EX_START(void);
 #define OSi_WRAM_MAIN_ARENA_HI_DEFAULT  (HW_WRAM)
 #define OSi_WRAM_MAIN_ARENA_LO_DEFAULT  (HW_WRAM)
 
+#ifndef PLATFORM_NATIVE
 #define HW_BG_PLTT              0x05000000
 #define HW_BG_PLTT_END          0x05000200
 #define HW_BG_PLTT_SIZE         (HW_BG_PLTT_END-HW_BG_PLTT)
@@ -105,6 +106,7 @@ extern void SDK_SECTION_ARENA_EX_START(void);
 #define HW_DB_OAM               0x07000400
 #define HW_DB_OAM_END           0x07000800
 #define HW_DB_OAM_SIZE          (HW_DB_OAM_END-HW_DB_OAM)
+#endif // PLATFORM_NATIVE
 
 #define HW_CTRDG_RAM_END        0x0a010000
 

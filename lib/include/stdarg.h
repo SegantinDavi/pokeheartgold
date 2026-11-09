@@ -1,3 +1,7 @@
+#ifdef PLATFORM_NATIVE
+#include_next <stdarg.h>
+#else
+
 #ifndef MSL_STDARG_H
 #define MSL_STDARG_H
 
@@ -21,3 +25,5 @@ _MSL_END_EXTERN_C
 _MSL_END_NAMESPACE_STD
 
 #endif //MSL_STDARG_H
+
+#endif // PLATFORM_NATIVE

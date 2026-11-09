@@ -21,6 +21,11 @@
 #include "comm_state.h"
 #include "wfc_user_info_warning.h"
 
+#ifdef PLATFORM_NATIVE
+#include "port_game_core.h"
+#include "port_os.h"
+#endif
+
 FS_EXTERN_OVERLAY(intro_title);
 FS_EXTERN_OVERLAY(OVY_36);
 
@@ -92,7 +97,11 @@ void NitroMain(void) {
     IGTCounter_Init();
     gAgbCartridgePulledOutInSleep = 0;
     OS_InitTick();
+#ifdef PLATFORM_NATIVE
+    while (!NativeOS_IsQuitRequested()) {
+#else
     while (1) {
+#endif
         HandleCommunicationErrorScreen();
         HandleDSLidAction();
         ReadKeypadAndTouchpad();
@@ -173,6 +182,9 @@ static void WaitForVBlank(void) {
     if (gSystem.vBlankIntr != NULL) {
         gSystem.vBlankIntr(gSystem.vBlankIntrArg);
     }
+#ifdef PLATFORM_NATIVE
+    GameCore_IncrementFrameCount();
+#endif
 }
 
 static void WaitForVBlankOrReset(u32 param) {
@@ -201,6 +213,10 @@ static void HandleCommunicationErrorScreen(void) {
 }
 
 static void DoSoftReset(u32 param) {
+#ifdef PLATFORM_NATIVE
+    (void)param;
+    return;
+#else
     SetMasterBrightnessByColor(PM_LCD_TOP, RGB_WHITE);
     SetMasterBrightnessByColor(PM_LCD_BOTTOM, RGB_WHITE);
     if (CommState_StopForReset()) {
@@ -210,6 +226,7 @@ static void DoSoftReset(u32 param) {
         HandleDSLidAction();
         WaitForVBlankOrReset(param);
     }
+#endif
 }
 
 static void ShowCommunicationErrorAndReset(u32 resetParam, int errorScreen) {
@@ -283,6 +300,9 @@ void InitializeMainRNG(void) {
 }
 
 void HandleDSLidAction(void) {
+#ifdef PLATFORM_NATIVE
+    return;
+#else
     PMBackLightSwitch top, bottom;
     PMWakeUpTrigger trigger;
     if (PAD_DetectFold()) {
@@ -322,4 +342,5 @@ void HandleDSLidAction(void) {
             PM_SetBackLight(PM_LCD_ALL, gBacklightTop);
         }
     }
+#endif
 }

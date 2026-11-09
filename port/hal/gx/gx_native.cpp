@@ -24,6 +24,8 @@ uint16_t gSubOBJPltt[256];
 
 bool gMainDispOn = true;
 bool gSubDispOn = true;
+int s_dispSelect = GX_DISP_SELECT_MAIN_SUB;
+bool s_testPatternEnabled = true;
 
 // VRAM banks (512 KB virtual VRAM allocation)
 uint8_t gVram[512 * 1024];
@@ -42,6 +44,68 @@ void GX_Init(void) {
     memset(gVram, 0, sizeof(gVram));
     gMainDispOn = true;
     gSubDispOn = true;
+    s_dispSelect = GX_DISP_SELECT_MAIN_SUB;
+    s_testPatternEnabled = true;
+}
+
+void GX_SetDispSelect(int val) {
+    s_dispSelect = val;
+}
+
+int GX_GetDispSelect(void) {
+    return s_dispSelect;
+}
+
+void GX_SetTestPatternEnabled(bool enabled) {
+    s_testPatternEnabled = enabled;
+}
+
+bool GX_IsTestPatternEnabled(void) {
+    return s_testPatternEnabled;
+}
+
+void GX_RouteCompositeBuffers(const uint32_t* mainComposite, const uint32_t* subComposite) {
+    if (s_dispSelect == GX_DISP_SELECT_MAIN_SUB) {
+        if (mainComposite) {
+            std::memcpy(gTopScreenPixels, mainComposite, sizeof(gTopScreenPixels));
+        }
+        if (subComposite) {
+            std::memcpy(gTouchScreenPixels, subComposite, sizeof(gTouchScreenPixels));
+        }
+    } else {
+        if (subComposite) {
+            std::memcpy(gTopScreenPixels, subComposite, sizeof(gTopScreenPixels));
+        }
+        if (mainComposite) {
+            std::memcpy(gTouchScreenPixels, mainComposite, sizeof(gTouchScreenPixels));
+        }
+    }
+}
+
+void GX_RouteCompositeBuffers16(const uint16_t* mainComposite, const uint16_t* subComposite) {
+    if (s_dispSelect == GX_DISP_SELECT_MAIN_SUB) {
+        if (mainComposite) {
+            for (size_t i = 0; i < SCREEN_PIXELS; ++i) {
+                gTopScreenPixels[i] = GX_RGB555ToRGBA(mainComposite[i]);
+            }
+        }
+        if (subComposite) {
+            for (size_t i = 0; i < SCREEN_PIXELS; ++i) {
+                gTouchScreenPixels[i] = GX_RGB555ToRGBA(subComposite[i]);
+            }
+        }
+    } else {
+        if (subComposite) {
+            for (size_t i = 0; i < SCREEN_PIXELS; ++i) {
+                gTopScreenPixels[i] = GX_RGB555ToRGBA(subComposite[i]);
+            }
+        }
+        if (mainComposite) {
+            for (size_t i = 0; i < SCREEN_PIXELS; ++i) {
+                gTouchScreenPixels[i] = GX_RGB555ToRGBA(mainComposite[i]);
+            }
+        }
+    }
 }
 
 void GX_DispOn(void) {

@@ -14,6 +14,7 @@ namespace {
 std::atomic<bool> gMasterInterruptEnable{true};
 std::atomic<OSIrqMask> gInterruptMask{0};
 std::atomic<u32> gVBlankCounter{0};
+std::atomic<bool> gQuitRequested{false};
 
 std::mutex gVBlankMutex;
 std::condition_variable gVBlankCV;
@@ -31,6 +32,7 @@ void OS_InitIrqTable(void) {
     gIrqTable.clear();
     gInterruptMask.store(0);
     gMasterInterruptEnable.store(true);
+    gQuitRequested.store(false);
 }
 
 void OS_SetIrqFunction(OSIrqMask intrBit, OSIrqFunction function) {
@@ -87,7 +89,7 @@ void OS_WaitVBlankIntr(void) {
     std::unique_lock<std::mutex> lock(gVBlankMutex);
     uint32_t targetSeq = gVBlankSignalSequence + 1;
     gVBlankCV.wait(lock, [targetSeq]() {
-        return static_cast<int32_t>(gVBlankSignalSequence - targetSeq) >= 0;
+        return gQuitRequested.load() || static_cast<int32_t>(gVBlankSignalSequence - targetSeq) >= 0;
     });
 }
 
@@ -119,6 +121,23 @@ void NativeOS_TriggerVBlank(void) {
         gVBlankSignalSequence++;
     }
     gVBlankCV.notify_all();
+}
+
+void NativeOS_InterruptVBlankWait(void) {
+    gQuitRequested.store(true);
+    {
+        std::lock_guard<std::mutex> lock(gVBlankMutex);
+        gVBlankSignalSequence++;
+    }
+    gVBlankCV.notify_all();
+}
+
+void NativeOS_ResetQuitRequest(void) {
+    gQuitRequested.store(false);
+}
+
+bool NativeOS_IsQuitRequested(void) {
+    return gQuitRequested.load();
 }
 
 } // extern "C"

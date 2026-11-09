@@ -15,41 +15,51 @@ extern "C" {
 #endif
 
 /* --- Thread Definitions --- */
+#ifndef NITRO_OS_THREAD_SHARED_H_
+#define NITRO_OS_THREAD_SHARED_H_
+
+typedef struct _OSThread OSThread;
+typedef struct _OSThreadQueue OSThreadQueue;
+typedef struct _OSThreadLink OSThreadLink;
+typedef struct _OSMutexQueue OSMutexQueue;
+typedef struct _OSMutexLink OSMutexLink;
+typedef struct OSMutex OSMutex;
+
 typedef enum {
     OS_THREAD_STATE_WAITING = 0,
     OS_THREAD_STATE_READY = 1,
     OS_THREAD_STATE_TERMINATED = 2
 } OSThreadState;
 
-typedef struct OSThreadQueue {
+struct _OSThreadQueue {
     void* head;
     void* tail;
-} OSThreadQueue;
+};
 
-typedef struct OSThreadLink {
+struct _OSThreadLink {
     void* prev;
     void* next;
-} OSThreadLink;
+};
 
-typedef struct OSMutexQueue {
+struct _OSMutexQueue {
     void* head;
     void* tail;
-} OSMutexQueue;
+};
 
-typedef struct OSMutexLink {
+struct _OSMutexLink {
     void* next;
     void* prev;
-} OSMutexLink;
+};
 
-typedef struct OSMutex {
+struct OSMutex {
     OSThreadQueue queue;
     void* thread;
     s32 count;
     OSMutexLink link;
     void* native_handle;
-} OSMutex;
+};
 
-typedef struct OSThread {
+struct _OSThread {
     OSThreadState state;
     void* next;
     u32 id;
@@ -64,7 +74,9 @@ typedef struct OSThread {
     u32 stackWarningOffset;
     OSThreadQueue joinQueue;
     void* native_handle;
-} OSThread;
+};
+
+#endif // NITRO_OS_THREAD_SHARED_H_
 
 /* --- Thread APIs --- */
 void OS_InitThread(void);
@@ -111,6 +123,11 @@ u32 OS_TicksToMilliSeconds(OSTick ticks);
 /* --- Interrupt and VBlank Definitions & APIs --- */
 typedef u32 OSIrqMask;
 typedef void (*OSIrqFunction)(void);
+typedef u32 OSIntrMode;
+
+static inline OSIntrMode OS_DisableInterrupts(void) { return 0; }
+static inline OSIntrMode OS_RestoreInterrupts(OSIntrMode state) { (void)state; return 0; }
+static inline OSIntrMode OS_EnableInterrupts(void) { return 0; }
 
 #define OS_IE_V_BLANK   (1UL << 0)
 #define OS_IE_H_BLANK   (1UL << 1)
@@ -143,6 +160,9 @@ u32 OS_GetVBlankCount(void);
 
 /* Host trigger to simulate virtual 59.8261 Hz VBlank */
 void NativeOS_TriggerVBlank(void);
+void NativeOS_InterruptVBlankWait(void);
+void NativeOS_ResetQuitRequest(void);
+bool NativeOS_IsQuitRequested(void);
 
 #ifdef __cplusplus
 }

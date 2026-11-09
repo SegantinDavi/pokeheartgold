@@ -5,6 +5,7 @@
 
 #include "display_manager.h"
 #include "framebuffer.h"
+#include "rom_icon_data.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <cstring>
@@ -236,6 +237,45 @@ void DisplayManager_PresentFrame(const void* topScreenPixels, const void* touchS
 
 void DisplayManager_Shutdown(void) {
     Framebuffer_Shutdown();
+}
+
+bool DisplayManager_SetWindowIcon(void* window) {
+    if (!window) {
+        return false;
+    }
+
+    SDL_Window* sdlWindow = static_cast<SDL_Window*>(window);
+    const uint32_t* pixelData = RomIcon_GetEmbeddedPixelData();
+    if (!pixelData) {
+        return false;
+    }
+
+    // RGBA 32-bit format mask for 0xAABBGGRR in little endian
+    Uint32 rmask = 0x000000FF;
+    Uint32 gmask = 0x0000FF00;
+    Uint32 bmask = 0x00FF0000;
+    Uint32 amask = 0xFF000000;
+
+    SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(
+        const_cast<void*>(static_cast<const void*>(pixelData)),
+        ROM_ICON_WIDTH,
+        ROM_ICON_HEIGHT,
+        32,
+        ROM_ICON_WIDTH * sizeof(uint32_t),
+        rmask, gmask, bmask, amask
+    );
+
+    if (!surface) {
+        return false;
+    }
+
+    SDL_SetWindowIcon(sdlWindow, surface);
+    SDL_FreeSurface(surface);
+    return true;
+}
+
+bool RomIcon_ApplyToWindow(void* window) {
+    return DisplayManager_SetWindowIcon(window);
 }
 
 } // extern "C"
