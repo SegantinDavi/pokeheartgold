@@ -1,7 +1,7 @@
 # AI Agent Guide: Pokémon HeartGold / SoulSilver Native PC Port
 
 This repository contains the complete C/C++ decompilation of **Pokémon HeartGold and SoulSilver**.
-The goal of this branch (`001-native-pc-port`) is to implement a **native recompilation for PC (Linux, Windows, macOS)**, producing a standalone executable that runs the game directly on the user's host operating system with modern peripheral support (keyboard, controller, mouse for touchscreen), without requiring an emulator.
+The goal of this branch (`003-graphics-pipeline`) is to implement a **native recompilation for PC (Linux, Windows, macOS)**, producing a standalone executable that runs the game directly on the user's host operating system with modern peripheral support (keyboard, controller, mouse for touchscreen), without requiring an emulator.
 
 ---
 
@@ -28,30 +28,30 @@ The original game was designed specifically for the **Nintendo DS** hardware arc
 ## 2. Implementation Roadmap
 
 ### Phase 1: Native Build Pipeline and Base Types
-- [ ] **CMake Configuration**: Create a modern `CMakeLists.txt` to compile C/C++ sources using modern desktop toolchains (GCC, Clang, MSVC) targeting x86_64 and ARM64.
-- [ ] **Type Normalization & 64-bit Portability**:
+- [x] **CMake Configuration**: Create a modern `CMakeLists.txt` to compile C/C++ sources using modern desktop toolchains (GCC, Clang, MSVC) targeting x86_64 and ARM64.
+- [x] **Type Normalization & 64-bit Portability**:
   - Ensure fixed-width integer types (`u32`, `s32`, `u16`, `s16`, `u8`, `s8`, `BOOL`) retain exact sizes across platforms.
   - Audit and fix unsafe casts between pointers (64-bit on desktop) and integers (32-bit on DS).
-- [ ] **Platform Isolation Macros**: Introduce `#ifdef PLATFORM_NATIVE` guards to isolate DS-specific register/hardware calls without altering original decompiled logic.
+- [x] **Platform Isolation Macros**: Introduce `#ifdef PLATFORM_NATIVE` guards to isolate DS-specific register/hardware calls without altering original decompiled logic.
 
 ### Phase 2: Operating System & Virtual Filesystem (Base HAL)
-- [ ] **OS Abstraction (`OS_`)**:
+- [x] **OS Abstraction (`OS_`)**:
   - Implement native threading, mutexes, and message queues (using standard C++ / SDL threading primitives).
   - Emulate system clock (`OS_GetTick`, `OS_GetTime`) and virtual vertical/horizontal blank interrupts (VBlank/HBlank at 60 FPS).
-- [ ] **Virtual Filesystem (`FS_` and `CARD_`)**:
+- [x] **Virtual Filesystem (`FS_` and `CARD_`)**:
   - Redirect cartridge read calls and NARC archive lookups to the local `files/` directory or bundled asset packs.
   - Implement local save game persistence on the host filesystem in place of DS Flash/SRAM.
 
 ### Phase 3: Windowing, Input & Display Management (SDL2 / SDL3)
-- [ ] **Configurable Dual-Screen Window Management**:
+- [x] **Configurable Dual-Screen Window Management**:
   - Render both 256x192 viewports within a single native window.
   - **Default Layout**: Horizontal Side-by-Side (Top Screen Left, Touchscreen Right) optimized for widescreen desktop monitors.
   - **Configurable Layouts**: Support runtime switching between Horizontal, Swapped Horizontal, Classic DS Vertical (Top above Bottom), and Swapped Vertical.
   - Preserve 4:3 screen aspect ratios with automatic pillarboxing/letterboxing on window resize.
-- [ ] **Input & Digitizer Mapping (`PAD_`)**:
+- [x] **Input & Digitizer Mapping (`PAD_`)**:
   - Map keyboard keys and modern gamepads to Nintendo DS buttons (A, B, X, Y, D-Pad, L, R, Start, Select).
   - Emulate the Touchscreen digitizer by dynamically transforming mouse cursor clicks/drags to virtual coordinates [0..255, 0..191] based on active viewport position and scaling.
-- [ ] **Audio Backend (`SND_`)**:
+- [x] **Audio Backend (`SND_`)**:
   - Route NitroSDK audio synthesizer output to host audio streams via SDL Audio or miniaudio.
 
 ### Phase 4: Graphics Pipeline (2D and 3D)
