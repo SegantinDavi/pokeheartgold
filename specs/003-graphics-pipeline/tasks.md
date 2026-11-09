@@ -22,14 +22,14 @@ All new source files live under `port/` (HAL) or `port/tests/` (tests). No `src/
 
 **Purpose**: Create the new headers and extend existing registers — the shared foundation all phases depend on.
 
-- [ ] T001 Create `port/include/nds_display_engine.h` defining `NdsBgLayer`, `NdsOamEntry`, `NdsDisplayControl`, `NdsBlendControl`, `NdsDisplayEngine` structs exactly as specified in `data-model.md`
-- [ ] T002 Extend `port/include/port_hw_registers.h` — map `HW_REG_BASE` and `HW_IOREG` to `((uintptr_t)gHardwareIoRegMemory)` and `HW_BG_VRAM` to `((uintptr_t)gHwLcdcVram)` under `PLATFORM_NATIVE` to prevent memory segfaults; add `blendCntMain`, `blendCntSub`, `blendAlpha`, `masterBrightMain`, `masterBrightSub` fields to `HardwareIoRegisters`; update `PortHwRegisters_Init` in `port/hal/gx/hw_registers.cpp` to zero-initialize them
-- [ ] T003 [P] Create `port/include/gx_pipeline.h` declaring `NdsGraphicsPipeline`, `gNdsGfx` extern, and `NdsGfx_Init/RenderMain/RenderSub/PresentFrame` — exact signature per `contracts/gx_pipeline.h`
-- [ ] T004 [P] Create `port/include/nds_compositor.h` declaring `NdsCompositor_RenderScanline`, `NdsCompositor_ApplyBrightness`, `NdsCompositor_AlphaBlend` — exact signature per `contracts/nds_compositor.h`
-- [ ] T005 [P] Create `port/include/nds_bg_renderer.h` declaring `NdsBg_RenderText`, `NdsBg_RenderAffine`, `NdsBg_DecodeTilePixel` — exact signature per `contracts/nds_bg_renderer.h`
-- [ ] T006 [P] Create `port/include/nds_sprite_renderer.h` declaring `NdsSpritePixel`, `NdsSprite_ParseOam`, `NdsSprite_RenderScanline` — exact signature per `contracts/nds_sprite_renderer.h`
-- [ ] T007 [P] Create `port/include/g3_pipeline.h` declaring `Nds3DPipelineState`, `G3Pipeline_*` internal functions, and NitroSDK public forwarder shims — exact signature per `contracts/g3_pipeline.h`
-- [ ] T008 [P] Create `port/include/nds_texture_cache.h` declaring `NdsTexCache_Upload`, `NdsTexCache_Bind`, `NdsTexCache_Flush` — exact signature per `contracts/nds_texture_cache.h`
+- [X] T001 Create `port/include/nds_display_engine.h` defining `NdsBgLayer`, `NdsOamEntry`, `NdsDisplayControl`, `NdsBlendControl`, `NdsDisplayEngine` structs exactly as specified in `data-model.md`
+- [X] T002 Extend `port/include/port_hw_registers.h` — map `HW_REG_BASE` and `HW_IOREG` to `((uintptr_t)gHardwareIoRegMemory)` and `HW_BG_VRAM` to `((uintptr_t)gHwLcdcVram)` under `PLATFORM_NATIVE` to prevent memory segfaults; add `blendCntMain`, `blendCntSub`, `blendAlpha`, `masterBrightMain`, `masterBrightSub` fields to `HardwareIoRegisters`; update `PortHwRegisters_Init` in `port/hal/gx/hw_registers.cpp` to zero-initialize them
+- [X] T003 [P] Create `port/include/gx_pipeline.h` declaring `NdsGraphicsPipeline`, `gNdsGfx` extern, and `NdsGfx_Init/RenderMain/RenderSub/PresentFrame` — exact signature per `contracts/gx_pipeline.h`
+- [X] T004 [P] Create `port/include/nds_compositor.h` declaring `NdsCompositor_RenderScanline`, `NdsCompositor_ApplyBrightness`, `NdsCompositor_AlphaBlend` — exact signature per `contracts/nds_compositor.h`
+- [X] T005 [P] Create `port/include/nds_bg_renderer.h` declaring `NdsBg_RenderText`, `NdsBg_RenderAffine`, `NdsBg_DecodeTilePixel` — exact signature per `contracts/nds_bg_renderer.h`
+- [X] T006 [P] Create `port/include/nds_sprite_renderer.h` declaring `NdsSpritePixel`, `NdsSprite_ParseOam`, `NdsSprite_RenderScanline` — exact signature per `contracts/nds_sprite_renderer.h`
+- [X] T007 [P] Create `port/include/g3_pipeline.h` declaring `Nds3DPipelineState`, `G3Pipeline_*` internal functions, and NitroSDK public forwarder shims — exact signature per `contracts/g3_pipeline.h`
+- [X] T008 [P] Create `port/include/nds_texture_cache.h` declaring `NdsTexCache_Upload`, `NdsTexCache_Bind`, `NdsTexCache_Flush` — exact signature per `contracts/nds_texture_cache.h`
 
 **Checkpoint**: All headers exist and compile cleanly (`cmake --build build -- port_headers` or equivalent). No implementation yet.
 

@@ -41,11 +41,20 @@ extern uint8_t gHwDbPltt[HW_DB_PLTT_SIZE];
 #define HW_DB_BG_PLTT HW_DB_PLTT
 #define HW_DB_OBJ_PLTT (HW_DB_PLTT + 0x200)
 
+#ifdef PLATFORM_NATIVE
+#define HW_REG_BASE   ((uintptr_t)gHardwareIoRegMemory)
+#define HW_IOREG      HW_REG_BASE
+#define HW_BG_VRAM    ((uintptr_t)gHwLcdcVram)
+#endif
+
 typedef struct HardwareIoRegisters {
     uint32_t dispCntMain;
     uint32_t dispCntSub;
     uint16_t bgCntMain[4];
     uint16_t bgCntSub[4];
+    uint16_t blendCntMain;
+    uint16_t blendCntSub;
+    uint16_t blendAlpha;
     int16_t  masterBrightMain;
     int16_t  masterBrightSub;
     uint8_t  vramBuffer[NDS_VRAM_BUFFER_SIZE];
