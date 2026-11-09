@@ -12,6 +12,7 @@
 
 #include "port_common.h"
 #include "port_os.h"
+#include "port_game_core.h"
 #include "port_vfs.h"
 #include "port_gx.h"
 #include "port_g3.h"
@@ -154,6 +155,9 @@ int main(int argc, char** argv) {
     std::cout << "Dual-screen display manager initialized (Horizontal Side-by-Side: "
               << DEFAULT_WINDOW_WIDTH << "x" << DEFAULT_WINDOW_HEIGHT << ").\n";
 
+    // Launch game core thread
+    GameCore_Start();
+
     bool running = true;
     int frameCount = 0;
     auto lastFrameTime = std::chrono::steady_clock::now();
@@ -196,6 +200,8 @@ int main(int argc, char** argv) {
         // Query active touchscreen input state
         NativeTouchState touch{};
         NativeInput_GetTouchState(&touch);
+        uint16_t padButtons = NativeInput_GetPadButtons();
+        GameCore_UpdateInput(padButtons, touch.screenX, touch.screenY, touch.touching);
 
         const char* layoutName = "SIDE-BY-SIDE";
         switch (DisplayManager_GetLayoutMode()) {
@@ -236,6 +242,10 @@ int main(int argc, char** argv) {
     }
 
     std::cout << "Shutting down application...\n";
+
+    // Stop game core thread and flush persistent save data
+    GameCore_Stop(1000);
+    NativeCard_FlushBackup();
 
     // Save display preferences
     dispConfig.mode = DisplayManager_GetLayoutMode();

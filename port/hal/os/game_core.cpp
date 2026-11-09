@@ -5,6 +5,7 @@
 
 #include "port_game_core.h"
 #include "port_os.h"
+#include "nitro.h"
 #include <thread>
 #include <atomic>
 #include <mutex>
@@ -73,6 +74,7 @@ bool GameCore_Start(void) {
     }
 
     s_stopRequested.store(false);
+    NativeOS_ResetQuitRequest();
     s_status.store(GAME_CORE_UNINITIALIZED);
 
     s_gameThread = std::thread(DefaultGameCoreWorker);
@@ -80,40 +82,17 @@ bool GameCore_Start(void) {
 }
 
 bool GameCore_Stop(uint32_t timeoutMs) {
+    (void)timeoutMs;
     s_stopRequested.store(true);
     NativeOS_InterruptVBlankWait();
 
-    if (!s_gameThread.joinable()) {
-        s_status.store(GAME_CORE_STOPPED);
-        return true;
+    if (s_gameThread.joinable()) {
+        s_gameThread.join();
     }
 
-    auto start = std::chrono::steady_clock::now();
-    bool joined = false;
-
-    std::thread joinWatcher([&]() {
-        if (s_gameThread.joinable()) {
-            s_gameThread.join();
-            joined = true;
-        }
-    });
-
-    auto timeoutDuration = std::chrono::milliseconds(timeoutMs);
-    auto deadline = start + timeoutDuration;
-
-    while (std::chrono::steady_clock::now() < deadline) {
-        if (joined) {
-            break;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-    }
-
-    if (joinWatcher.joinable()) {
-        joinWatcher.join();
-    }
-
+    NativeOS_ResetQuitRequest();
     s_status.store(GAME_CORE_STOPPED);
-    return joined;
+    return true;
 }
 
 GameCoreStatus GameCore_GetStatus(void) {
@@ -142,6 +121,44 @@ void GameCore_GetInput(uint16_t* padButtons, uint8_t* touchX, uint8_t* touchY, b
     if (touchX) *touchX = s_inputState.touchX;
     if (touchY) *touchY = s_inputState.touchY;
     if (touching) *touching = s_inputState.touching;
+}
+
+void* OS_AllocFromArenaLo(OSArenaId id, u32 size, u32 align) {
+    (void)id;
+    (void)align;
+    return std::malloc(size);
+}
+
+void* OS_AllocFromArenaHi(OSArenaId id, u32 size, u32 align) {
+    (void)id;
+    (void)align;
+    return std::malloc(size);
+}
+
+u16 PAD_Read(void) {
+    uint16_t buttons = 0xFFFF;
+    GameCore_GetInput(&buttons, nullptr, nullptr, nullptr);
+    return buttons;
+}
+
+void TP_GetLatestRawPointInAuto(TPData *result) {
+    if (!result) return;
+    uint8_t tx = 0, ty = 0;
+    bool touching = false;
+    GameCore_GetInput(nullptr, &tx, &ty, &touching);
+    result->x = tx;
+    result->y = ty;
+    result->touch = touching ? TP_TOUCH_ON : TP_TOUCH_OFF;
+    result->validity = TP_VALIDITY_VALID;
+}
+
+void TP_GetCalibratedPoint(TPData *calib, const TPData *raw) {
+    if (!calib) return;
+    if (raw) {
+        *calib = *raw;
+    } else {
+        TP_GetLatestRawPointInAuto(calib);
+    }
 }
 
 } // extern "C"

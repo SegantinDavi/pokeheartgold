@@ -53,13 +53,13 @@
 
 ### Tests for User Story 1
 
-- [ ] T010 [P] [US1] Implement unit test for game core thread startup (<2.0s per SC-002), state transitions, and shutdown in port/tests/test_game_core.cpp
+- [X] T010 [P] [US1] Implement unit test for game core thread startup (<2.0s per SC-002), state transitions, and shutdown in port/tests/test_game_core.cpp
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Adapt core decompiled engine sources in src/system.c, src/main.c, and memory heaps for 64-bit desktop compilation under PLATFORM_NATIVE
-- [ ] T012 [US1] Wire GameCore_Start to invoke NitroMain on the dedicated background thread in port/hal/os/game_core.cpp
-- [ ] T013 [US1] Integrate GameCore_Start on startup and clean GameCore_Stop with save data flush (NativeCard_FlushBackup / pokemon_heartgold.sav) on SDL_QUIT/ESC in port/main.cpp
+- [X] T011 [US1] Adapt core decompiled engine sources in src/system.c, src/main.c, and memory heaps for 64-bit desktop compilation under PLATFORM_NATIVE
+- [X] T012 [US1] Wire GameCore_Start to invoke NitroMain on the dedicated background thread in port/hal/os/game_core.cpp
+- [X] T013 [US1] Integrate GameCore_Start on startup and clean GameCore_Stop with save data flush (NativeCard_FlushBackup / pokemon_heartgold.sav) on SDL_QUIT/ESC in port/main.cpp
 
 **Checkpoint**: Game engine loop boots, runs synchronously on its dedicated thread, and cleanly shuts down on window close.
 

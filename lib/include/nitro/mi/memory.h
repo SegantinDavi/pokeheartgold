@@ -13,19 +13,19 @@ void MI_CpuFill8(void *dest, u8 data, u32 size);
 void MI_CpuCopy8(const void * src, void * dst, u32 size);
 
 static inline void MI_CpuCopy16(const void *src, void *dst, u32 size) {
-    MIi_CpuCopy16(src, dst, size);
+    MIi_CpuCopy16((const u16 *)src, (u16 *)dst, size);
 }
 
 static inline void MI_CpuClear16(void *dest, u32 size) {
-    MIi_CpuClear16(0, dest, size);
+    MIi_CpuClear16(0, (u16 *)dest, size);
 }
 
 static inline void MI_CpuFill16(void *dest, u16 data, u32 size) {
-    MIi_CpuClear16(data, dest, size);
+    MIi_CpuClear16(data, (u16 *)dest, size);
 }
 
 static inline void MI_CpuFill32(void *dest, u32 data, u32 size) {
-    MIi_CpuClear32(data, dest, size);
+    MIi_CpuClear32(data, (u32 *)dest, size);
 }
 
 static inline void MI_CpuClear32(void *dest, u32 size) {
@@ -33,19 +33,19 @@ static inline void MI_CpuClear32(void *dest, u32 size) {
 }
 
 static inline void MI_CpuCopy32(const void *src, void *dst, u32 size) {
-    MIi_CpuCopy32((u32 *)src, (u32 *)dst, size);
+    MIi_CpuCopy32((const u32 *)src, (u32 *)dst, size);
 }
 
 static inline void MI_CpuClearFast(void *dst, u32 size) {
-    MIi_CpuClearFast(0, dst, size);
+    MIi_CpuClearFast(0, (u32 *)dst, size);
 }
 
 static inline void MI_CpuCopyFast(const void *src, void *dst, u32 size) {
-    MIi_CpuCopyFast(src, dst, size);
+    MIi_CpuCopyFast((const u32 *)src, (u32 *)dst, size);
 }
 
 static inline void MI_CpuFillFast(void *dst, int data, u32 size) {
-    MIi_CpuClearFast(data, dst, size);
+    MIi_CpuClearFast((u32)data, (u32 *)dst, size);
 }
 
 static inline void MI_CpuClear8(void *dst, u32 size) {

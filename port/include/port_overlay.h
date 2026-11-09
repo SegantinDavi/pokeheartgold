@@ -39,6 +39,9 @@ size_t NativeOverlay_GetCount(void);
 typedef u32 FSOverlayID;
 typedef u32 MIProcessor;
 
+#define FS_EXTERN_OVERLAY(name) extern u32 SDK_OVERLAY_##name##_ID[1]
+#define FS_OVERLAY_ID(name)     ((FSOverlayID)(uintptr_t)SDK_OVERLAY_##name##_ID)
+
 #define MI_PROCESSOR_ARM9 0
 #define MI_PROCESSOR_ARM7 1
 

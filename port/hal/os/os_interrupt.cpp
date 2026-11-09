@@ -32,6 +32,7 @@ void OS_InitIrqTable(void) {
     gIrqTable.clear();
     gInterruptMask.store(0);
     gMasterInterruptEnable.store(true);
+    gQuitRequested.store(false);
 }
 
 void OS_SetIrqFunction(OSIrqMask intrBit, OSIrqFunction function) {
@@ -129,6 +130,10 @@ void NativeOS_InterruptVBlankWait(void) {
         gVBlankSignalSequence++;
     }
     gVBlankCV.notify_all();
+}
+
+void NativeOS_ResetQuitRequest(void) {
+    gQuitRequested.store(false);
 }
 
 bool NativeOS_IsQuitRequested(void) {

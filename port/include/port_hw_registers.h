@@ -19,6 +19,28 @@ extern "C" {
 #define NDS_IO_REG_SIZE      (0x2000)            /* 8 KB I/O register window */
 #define NDS_VRAM_BUFFER_SIZE (512 * 1024)        /* 512 KB VRAM */
 
+#define HW_LCDC_VRAM_SIZE    (656 * 1024)
+#define HW_OAM_SIZE          (1024)
+#define HW_DB_OAM_SIZE       (1024)
+#define HW_PLTT_SIZE         (1024)
+#define HW_DB_PLTT_SIZE      (1024)
+
+extern uint8_t gHwLcdcVram[HW_LCDC_VRAM_SIZE];
+extern uint8_t gHwOam[HW_OAM_SIZE];
+extern uint8_t gHwDbOam[HW_DB_OAM_SIZE];
+extern uint8_t gHwPltt[HW_PLTT_SIZE];
+extern uint8_t gHwDbPltt[HW_DB_PLTT_SIZE];
+
+#define HW_LCDC_VRAM ((uintptr_t)gHwLcdcVram)
+#define HW_OAM       ((uintptr_t)gHwOam)
+#define HW_DB_OAM    ((uintptr_t)gHwDbOam)
+#define HW_PLTT      ((uintptr_t)gHwPltt)
+#define HW_DB_PLTT   ((uintptr_t)gHwDbPltt)
+#define HW_BG_PLTT   HW_PLTT
+#define HW_OBJ_PLTT  (HW_PLTT + 0x200)
+#define HW_DB_BG_PLTT HW_DB_PLTT
+#define HW_DB_OBJ_PLTT (HW_DB_PLTT + 0x200)
+
 typedef struct HardwareIoRegisters {
     uint32_t dispCntMain;
     uint32_t dispCntSub;
