@@ -91,6 +91,7 @@ typedef struct TPCalibrateParam {
 #define GX_PLANEMASK_OBJ        0x10
 
 #define GX_DISP_SELECT_MAIN_SUB 0
+#define GX_DISP_SELECT_SUB_MAIN 1
 #define GX_VRAM_LCDC_ALL        0x000000FF
 #define OS_IE_SPFIFO_RECV       (1UL << 29)
 
@@ -160,7 +161,8 @@ static inline BOOL CARD_IsPulledOut(void) { return FALSE; }
 static inline BOOL CARD_TryWaitBackupAsync(void) { return TRUE; }
 static inline void OS_ResetSystem(u32 param) { (void)param; }
 
-static inline void GX_SetDispSelect(int val) { (void)val; }
+void GX_SetDispSelect(int val);
+int GX_GetDispSelect(void);
 static inline void GX_VBlankIntr(BOOL enable) { (void)enable; }
 static inline void GX_SetBankForLCDC(u32 bank) { (void)bank; }
 static inline void GX_DisableBankForLCDC(void) {}
@@ -182,7 +184,7 @@ static inline BOOL PAD_DetectFold(void) { return FALSE; }
 static inline void TP_Init(void) {}
 static inline BOOL TP_GetUserInfo(TPCalibrateParam *param) { (void)param; return TRUE; }
 static inline void TP_SetCalibrateParam(const TPCalibrateParam *param) { (void)param; }
-static inline u32 TP_RequestRawSampling(TPData *result) { (void)result; return 0; }
+u32 TP_RequestRawSampling(TPData *result);
 void TP_GetLatestRawPointInAuto(TPData *result);
 void TP_GetCalibratedPoint(TPData *calib, const TPData *raw);
 

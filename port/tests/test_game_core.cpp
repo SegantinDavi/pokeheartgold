@@ -68,3 +68,29 @@ TEST_CASE(GameCore_InputStateBuffering) {
     ASSERT_EQ(touchY, outTouchY);
     ASSERT_TRUE(outTouching);
 }
+
+TEST_CASE(GameCore_RepeatedStartStopCycles) {
+    for (int cycle = 0; cycle < 3; ++cycle) {
+        ASSERT_TRUE(GameCore_Start());
+
+        // Wait for thread to become active
+        bool active = false;
+        for (int i = 0; i < 30; ++i) {
+            GameCoreStatus s = GameCore_GetStatus();
+            if (s == GAME_CORE_RUNNING || s == GAME_CORE_WAITING_VBLANK) {
+                active = true;
+                break;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+        ASSERT_TRUE(active);
+
+        // Advance a frame
+        NativeOS_TriggerVBlank();
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+        // Stop cleanly
+        ASSERT_TRUE(GameCore_Stop(1000));
+        ASSERT_EQ(GAME_CORE_STOPPED, GameCore_GetStatus());
+    }
+}

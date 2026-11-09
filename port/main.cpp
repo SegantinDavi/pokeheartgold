@@ -7,6 +7,7 @@
 #include <string>
 #include <chrono>
 #include <thread>
+#include <sys/stat.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
 
@@ -55,8 +56,26 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // Initialize Native HAL Subsystems
-    NativeVFS_Init("files");
+    // Initialize Native HAL Subsystems with working-directory independent path resolution
+    std::string assetDir = "files";
+    struct stat st;
+    if (stat("files", &st) != 0) {
+        if (stat("../files", &st) == 0) {
+            assetDir = "../files";
+        } else {
+            char* basePath = SDL_GetBasePath();
+            if (basePath) {
+                std::string base(basePath);
+                SDL_free(basePath);
+                if (stat((base + "files").c_str(), &st) == 0) {
+                    assetDir = base + "files";
+                } else if (stat((base + "../files").c_str(), &st) == 0) {
+                    assetDir = base + "../files";
+                }
+            }
+        }
+    }
+    NativeVFS_Init(assetDir.c_str());
     CARD_Init();
     SND_Init();
     OS_InitTick();
@@ -160,7 +179,8 @@ int main(int argc, char** argv) {
 
     bool running = true;
     int frameCount = 0;
-    auto lastFrameTime = std::chrono::steady_clock::now();
+    auto nextFrameTime = std::chrono::steady_clock::now() +
+        std::chrono::duration<double, std::milli>(TARGET_FRAME_TIME_MS);
 
     while (running) {
         // Poll input events (Keyboard, Gamepad, Mouse Touchscreen)
@@ -213,7 +233,9 @@ int main(int argc, char** argv) {
         }
 
         // Render interactive dual-screen presentation card & touch feedback
-        GX_DrawTestPattern(frameCount, touch.screenX, touch.screenY, touch.touching, layoutName);
+        if (GX_IsTestPatternEnabled()) {
+            GX_DrawTestPattern(frameCount, touch.screenX, touch.screenY, touch.touching, layoutName);
+        }
 
         // Render current 2D/3D graphics frame into dual viewports
         GX_RenderFrame();
@@ -232,13 +254,13 @@ int main(int argc, char** argv) {
             running = false;
         }
 
-        // Frame rate limiter (~59.8261 Hz)
+        // Frame rate limiter locked to 59.8261 Hz without time drift (SC-003)
+        std::this_thread::sleep_until(nextFrameTime);
+        nextFrameTime += std::chrono::duration<double, std::milli>(TARGET_FRAME_TIME_MS);
         auto now = std::chrono::steady_clock::now();
-        double elapsedMs = std::chrono::duration<double, std::milli>(now - lastFrameTime).count();
-        if (elapsedMs < TARGET_FRAME_TIME_MS) {
-            std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(TARGET_FRAME_TIME_MS - elapsedMs));
+        if (nextFrameTime < now) {
+            nextFrameTime = now + std::chrono::duration<double, std::milli>(TARGET_FRAME_TIME_MS);
         }
-        lastFrameTime = std::chrono::steady_clock::now();
     }
 
     std::cout << "Shutting down application...\n";

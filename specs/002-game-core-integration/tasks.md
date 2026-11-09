@@ -73,13 +73,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T014 [P] [US3] Implement unit test for input bridge (ReadKeypadAndTouchpad) and VBlank pacing (<16ms frame-boundary sync per SC-004) in port/tests/test_engine_sync.cpp
+- [X] T014 [P] [US3] Implement unit test for input bridge (ReadKeypadAndTouchpad) and VBlank pacing (<16ms frame-boundary sync per SC-004) in port/tests/test_engine_sync.cpp
 
 ### Implementation for User Story 3
 
-- [ ] T015 [US3] Connect NativeInput button mask and mouse touch coordinates to ReadKeypadAndTouchpad in port/hal/os/game_core.cpp
-- [ ] T016 [US3] Route game engine 2D/3D composite buffers directly to gTopScreenPixels and gTouchScreenPixels in port/hal/gx/gx_native.cpp
-- [ ] T017 [US3] Synchronize game frame pacing with 59.8261 Hz VBlank in port/main.cpp
+- [X] T015 [US3] Connect NativeInput button mask and mouse touch coordinates to ReadKeypadAndTouchpad in port/hal/os/game_core.cpp
+- [X] T016 [US3] Route game engine 2D/3D composite buffers directly to gTopScreenPixels and gTouchScreenPixels in port/hal/gx/gx_native.cpp
+- [X] T017 [US3] Synchronize game frame pacing with 59.8261 Hz VBlank in port/main.cpp
 
 **Checkpoint**: Full bidirectional input and visual interaction between the host desktop and the Pokémon HeartGold engine.
 
@@ -89,9 +89,9 @@
 
 **Purpose**: Optimization, build verification, memory safety, and regression checks.
 
-- [ ] T018 [P] Audit thread shutdown for clean resource deallocation, save backup flushing, and zero memory leaks
-- [ ] T019 Execute full build validation and run automated test suite via ctest in build-native/
-- [ ] T020 Validate interactive startup, working-directory independent path resolution, icon display, and controls per specs/002-game-core-integration/quickstart.md
+- [X] T018 [P] Audit thread shutdown for clean resource deallocation, save backup flushing, and zero memory leaks
+- [X] T019 Execute full build validation and run automated test suite via ctest in build-native/
+- [X] T020 Validate interactive startup, working-directory independent path resolution, icon display, and controls per specs/002-game-core-integration/quickstart.md
 
 ---
 

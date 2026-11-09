@@ -29,7 +29,7 @@ std::atomic<uint64_t> s_frameCount{0};
 GameCoreMainFunc s_customMainFunc = nullptr;
 
 struct InputState {
-    uint16_t buttons = 0xFFFF;
+    uint16_t buttons = 0;
     uint8_t touchX = 0;
     uint8_t touchY = 0;
     bool touching = false;
@@ -136,9 +136,16 @@ void* OS_AllocFromArenaHi(OSArenaId id, u32 size, u32 align) {
 }
 
 u16 PAD_Read(void) {
-    uint16_t buttons = 0xFFFF;
+    uint16_t buttons = 0;
     GameCore_GetInput(&buttons, nullptr, nullptr, nullptr);
     return buttons;
+}
+
+u32 TP_RequestRawSampling(TPData *result) {
+    if (result) {
+        TP_GetLatestRawPointInAuto(result);
+    }
+    return 0;
 }
 
 void TP_GetLatestRawPointInAuto(TPData *result) {
