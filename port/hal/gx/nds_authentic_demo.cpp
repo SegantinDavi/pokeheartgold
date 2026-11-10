@@ -19,7 +19,7 @@
 
 namespace {
 
-bool s_initialized = false;
+bool s_assetsLoaded = false;
 
 std::string FindAssetPath(const std::string& relativePath) {
     const char* prefixes[] = {
@@ -65,59 +65,60 @@ bool ReadFileData(const std::string& path, size_t headerSkip, void* dst, size_t 
 extern "C" {
 
 bool NdsAuthenticDemo_Init(void) {
-    if (s_initialized) return true;
+    if (!s_assetsLoaded) {
+        // Load authentic Pokémon HeartGold Title Screen graphics from files/demo/title/titledemo/
+        // 1. Palette: titledemo_00000002.NCLR (512 bytes raw palette at offset 40)
+        std::string nclrPath = "files/demo/title/titledemo/titledemo_00000002.NCLR";
+        ReadFileData(nclrPath, 40, gHwPltt, 512);
+        ReadFileData(nclrPath, 40, gHwDbPltt, 512);
 
-    // Load authentic Pokémon HeartGold Title Screen graphics from files/demo/title/titledemo/
-    // 1. Palette: titledemo_00000002.NCLR (512 bytes raw palette at offset 40)
-    std::string nclrPath = "files/demo/title/titledemo/titledemo_00000002.NCLR";
-    ReadFileData(nclrPath, 40, gHwPltt, 512);
-    ReadFileData(nclrPath, 40, gHwDbPltt, 512);
+        // Also populate OBJ palette with contrasting vivid colors for interactive sprites
+        uint16_t* objPltt = reinterpret_cast<uint16_t*>(gHwPltt + 512);
+        uint16_t* dbObjPltt = reinterpret_cast<uint16_t*>(gHwDbPltt + 512);
+        objPltt[1] = 0x001F; // Red
+        objPltt[2] = 0x7FE0; // Gold / Yellow
+        objPltt[3] = 0x7FFF; // White
+        dbObjPltt[1] = 0x001F;
+        dbObjPltt[2] = 0x7FE0;
+        dbObjPltt[3] = 0x7FFF;
 
-    // Also populate OBJ palette with contrasting vivid colors for interactive sprites
-    uint16_t* objPltt = reinterpret_cast<uint16_t*>(gHwPltt + 512);
-    uint16_t* dbObjPltt = reinterpret_cast<uint16_t*>(gHwDbPltt + 512);
-    objPltt[1] = 0x001F; // Red
-    objPltt[2] = 0x7FE0; // Gold / Yellow
-    objPltt[3] = 0x7FFF; // White
-    dbObjPltt[1] = 0x001F;
-    dbObjPltt[2] = 0x7FE0;
-    dbObjPltt[3] = 0x7FFF;
+        // 2. Main screen Title Logo tiles: titledemo_00000001.NCGR (30720 bytes at offset 48)
+        std::string ncgrMainPath = "files/demo/title/titledemo/titledemo_00000001.NCGR";
+        ReadFileData(ncgrMainPath, 48, gHwLcdcVram + 0, 30720);
 
-    // 2. Main screen Title Logo tiles: titledemo_00000001.NCGR (30720 bytes at offset 48)
-    std::string ncgrMainPath = "files/demo/title/titledemo/titledemo_00000001.NCGR";
-    ReadFileData(ncgrMainPath, 48, gHwLcdcVram + 0, 30720);
+        // 3. Main screen Title Logo screen map: titledemo_00000000.NSCR (2048 bytes at offset 36)
+        std::string nscrMainPath = "files/demo/title/titledemo/titledemo_00000000.NSCR";
+        ReadFileData(nscrMainPath, 36, gHwLcdcVram + 0x8000, 2048);
 
-    // 3. Main screen Title Logo screen map: titledemo_00000000.NSCR (2048 bytes at offset 36)
-    std::string nscrMainPath = "files/demo/title/titledemo/titledemo_00000000.NSCR";
-    ReadFileData(nscrMainPath, 36, gHwLcdcVram + 0x8000, 2048);
+        // 4. Sub screen bottom artwork: titledemo_00000036.NCGR (offset 48) and 00000037.NSCR (offset 36)
+        std::string ncgrSubPath = "files/demo/title/titledemo/titledemo_00000036.NCGR";
+        ReadFileData(ncgrSubPath, 48, gHwLcdcVram + 0x10000, 49152);
 
-    // 4. Sub screen bottom artwork: titledemo_00000036.NCGR (offset 48) and 00000037.NSCR (offset 36)
-    std::string ncgrSubPath = "files/demo/title/titledemo/titledemo_00000036.NCGR";
-    ReadFileData(ncgrSubPath, 48, gHwLcdcVram + 0x10000, 49152);
+        std::string nscrSubPath = "files/demo/title/titledemo/titledemo_00000037.NSCR";
+        ReadFileData(nscrSubPath, 36, gHwLcdcVram + 0x1C000, 2048);
 
-    std::string nscrSubPath = "files/demo/title/titledemo/titledemo_00000037.NSCR";
-    ReadFileData(nscrSubPath, 36, gHwLcdcVram + 0x1C000, 2048);
-
-    // 5. Create a stylized 8x8 Pokéball sprite tile in OBJ VRAM (offset 0x20000)
-    uint8_t* objVram = gHwLcdcVram + 0x20000;
-    std::memset(objVram, 0, 32);
-    // Draw 8x8 circular Pokéball: top red (1), bottom white (3), center ring (2)
-    const uint8_t pokeball[8][8] = {
-        {0, 0, 1, 1, 1, 1, 0, 0},
-        {0, 1, 1, 1, 1, 1, 1, 0},
-        {1, 1, 1, 1, 1, 1, 1, 1},
-        {2, 2, 2, 3, 3, 2, 2, 2},
-        {2, 2, 2, 3, 3, 2, 2, 2},
-        {3, 3, 3, 3, 3, 3, 3, 3},
-        {0, 3, 3, 3, 3, 3, 3, 0},
-        {0, 0, 3, 3, 3, 3, 0, 0}
-    };
-    for (int y = 0; y < 8; ++y) {
-        for (int x = 0; x < 8; x += 2) {
-            uint8_t p0 = pokeball[y][x];
-            uint8_t p1 = pokeball[y][x + 1];
-            objVram[y * 4 + (x / 2)] = (p1 << 4) | (p0 & 0x0F);
+        // 5. Create a stylized 8x8 Pokéball sprite tile in OBJ VRAM (offset 0x20000)
+        uint8_t* objVram = gHwLcdcVram + 0x20000;
+        std::memset(objVram, 0, 32);
+        // Draw 8x8 circular Pokéball: top red (1), bottom white (3), center ring (2)
+        const uint8_t pokeball[8][8] = {
+            {0, 0, 1, 1, 1, 1, 0, 0},
+            {0, 1, 1, 1, 1, 1, 1, 0},
+            {1, 1, 1, 1, 1, 1, 1, 1},
+            {2, 2, 2, 3, 3, 2, 2, 2},
+            {2, 2, 2, 3, 3, 2, 2, 2},
+            {3, 3, 3, 3, 3, 3, 3, 3},
+            {0, 3, 3, 3, 3, 3, 3, 0},
+            {0, 0, 3, 3, 3, 3, 0, 0}
+        };
+        for (int y = 0; y < 8; ++y) {
+            for (int x = 0; x < 8; x += 2) {
+                uint8_t p0 = pokeball[y][x];
+                uint8_t p1 = pokeball[y][x + 1];
+                objVram[y * 4 + (x / 2)] = (p1 << 4) | (p0 & 0x0F);
+            }
         }
+        s_assetsLoaded = true;
     }
 
     // Configure Display Engines:
@@ -162,12 +163,11 @@ bool NdsAuthenticDemo_Init(void) {
     gNdsGfx.sub.bg[1].scrollX = 0;
     gNdsGfx.sub.bg[1].scrollY = 0;
 
-    s_initialized = true;
     return true;
 }
 
 void NdsAuthenticDemo_RenderFrame(int frameCount, int touchX, int touchY, bool touching) {
-    if (!s_initialized) {
+    if (!s_assetsLoaded) {
         NdsAuthenticDemo_Init();
     }
 
@@ -296,6 +296,7 @@ void NdsAuthenticDemo_RenderFrame(int frameCount, int touchX, int touchY, bool t
         }
         glEnd();
 
+        glDisable(GL_DEPTH_TEST);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // Perform swap and readback into BG0

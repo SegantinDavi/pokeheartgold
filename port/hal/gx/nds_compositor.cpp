@@ -116,9 +116,13 @@ void NdsCompositor_RenderScanline(NdsDisplayEngine* engine,
     bool objActive = false;
     const uint16_t* objPltt = pltt ? (pltt + 256) : nullptr;
     if (oam && (engine->dispcnt.visiblePlanes & (1 << 4))) {
-        NdsOamEntry oamEntries[NDS_OAM_ENTRIES];
-        NdsSprite_ParseOam(oam, oamEntries);
-        NdsSprite_RenderScanline(oamEntries, scanline, vram, objPltt, spriteLine, engine->dispcnt.objMapChar1D);
+        thread_local NdsOamEntry cachedOam[NDS_OAM_ENTRIES];
+        thread_local const uint8_t* cachedOamPtr = nullptr;
+        if (scanline == 0 || oam != cachedOamPtr) {
+            NdsSprite_ParseOam(oam, cachedOam);
+            cachedOamPtr = oam;
+        }
+        NdsSprite_RenderScanline(cachedOam, scanline, vram, objPltt, spriteLine, engine->dispcnt.objMapChar1D);
         objActive = true;
     }
 

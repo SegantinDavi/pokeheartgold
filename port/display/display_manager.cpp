@@ -3,6 +3,7 @@
  * @brief Native display manager, dual-screen compositor, and coordinate transformation.
  */
 
+#define GL_GLEXT_PROTOTYPES 1
 #include "display_manager.h"
 #include "framebuffer.h"
 #include "rom_icon_data.h"
@@ -28,6 +29,10 @@ void RenderTexturedQuad(uint32_t textureId, const ViewportRect& vp, int32_t wind
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_BLEND);
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureId);
@@ -227,9 +232,17 @@ void DisplayManager_PresentFrame(const void* topScreenPixels, const void* touchS
         return;
     }
 
-    // Clear pillarbox/letterbox margin to black
+    // Ensure default window framebuffer and full viewport
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, gActiveConfig.windowWidth, gActiveConfig.windowHeight);
+
+    // Disable 3D depth and culling states for 2D quad composition
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+
+    // Clear pillarbox/letterbox margin and depth to clean state
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     RenderTexturedQuad(Framebuffer_GetTopTexture(), gActiveConfig.topViewport, gActiveConfig.windowHeight);
     RenderTexturedQuad(Framebuffer_GetTouchTexture(), gActiveConfig.touchViewport, gActiveConfig.windowHeight);

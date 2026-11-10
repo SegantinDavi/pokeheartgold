@@ -131,8 +131,11 @@ void NdsGfx_RenderSub(void) {
     // Frame compositing budget measurement (T057, SC-005)
     uint64_t endPerf = SDL_GetPerformanceCounter();
     double elapsedMs = (static_cast<double>(endPerf - s_renderStartPerf) * 1000.0) / static_cast<double>(SDL_GetPerformanceFrequency());
+    static uint32_t s_budgetWarningCounter = 0;
     if (elapsedMs > 4.0) {
-        SDL_Log("Warning: 2D/3D compositing exceeded 4 ms budget: %.2f ms", elapsedMs);
+        if ((s_budgetWarningCounter++ % 60) == 0) {
+            SDL_Log("Warning: 2D/3D compositing exceeded 4 ms budget: %.2f ms", elapsedMs);
+        }
     }
 }
 

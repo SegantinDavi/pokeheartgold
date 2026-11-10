@@ -8,6 +8,7 @@
 #include "port_os.h"
 #include "port_gx.h"
 #include "gx_pipeline.h"
+#include "nds_authentic_demo.h"
 #include "nitro.h"
 #include <chrono>
 #include <thread>
@@ -231,5 +232,27 @@ TEST_CASE(EngineSync_NdsGfxPresentFrameDispSelectSwap) {
     ASSERT_EQ(0xFFDDEEFF, GX_GetTopScreenPixels()[0]);
     ASSERT_EQ(0xFFAABBCC, GX_GetTouchScreenPixels()[0]);
 }
+
+TEST_CASE(EngineSync_AuthenticDemoPipelinePixels) {
+    NdsGfx_Init();
+    NdsAuthenticDemo_RenderFrame(0, 100, 100, false);
+    NdsGfx_RenderMain();
+    NdsGfx_RenderSub();
+    NdsGfx_PresentFrame();
+
+    int nonBlackTop = 0;
+    int nonBlackSub = 0;
+    uint32_t* top = GX_GetTopScreenPixels();
+    uint32_t* sub = GX_GetTouchScreenPixels();
+
+    for (int i = 0; i < 256 * 192; ++i) {
+        if ((top[i] & 0x00FFFFFF) != 0) nonBlackTop++;
+        if ((sub[i] & 0x00FFFFFF) != 0) nonBlackSub++;
+    }
+
+    ASSERT_TRUE(nonBlackTop > 0);
+    ASSERT_TRUE(nonBlackSub > 0);
+}
+
 
 
