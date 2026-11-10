@@ -18,8 +18,9 @@ extern "C" {
 
 /** Sprite line buffer slot: RGBA pixel + priority. */
 typedef struct {
-    uint32_t color;     /**< RGBA8 pixel; 0x00000000 = transparent. */
-    uint8_t  priority;  /**< Hardware priority 0–3. */
+    uint32_t color;           /**< RGBA8 pixel; 0x00000000 = transparent. */
+    uint8_t  priority;        /**< Hardware priority 0–3. */
+    bool     semiTransparent; /**< objMode == 1 (alpha blended) */
 } NdsSpritePixel;
 
 /**

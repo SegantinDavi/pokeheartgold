@@ -41,6 +41,7 @@ typedef struct {
 
 /** Object Attribute Memory (OAM) Sprite Entry */
 typedef struct {
+    bool     enabled;        /**< false if disabled via bit 9 (when !affineFlag) */
     // Attribute 0
     uint8_t  y;              /**< Y coordinate (wrapping at 192) */
     bool     affineFlag;     /**< Rotation/scale enabled */

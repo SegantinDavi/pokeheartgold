@@ -111,16 +111,29 @@ void NdsCompositor_RenderScanline(NdsDisplayEngine* engine,
         }
     }
 
+    // Render OAM sprites if enabled (plane 4 in visiblePlanes)
+    NdsSpritePixel spriteLine[256];
+    bool objActive = false;
+    const uint16_t* objPltt = pltt ? (pltt + 256) : nullptr;
+    if (oam && (engine->dispcnt.visiblePlanes & (1 << 4))) {
+        NdsOamEntry oamEntries[NDS_OAM_ENTRIES];
+        NdsSprite_ParseOam(oam, oamEntries);
+        NdsSprite_RenderScanline(oamEntries, scanline, vram, objPltt, spriteLine, engine->dispcnt.objMapChar1D);
+        objActive = true;
+    }
+
     // Priority sort order: 4 priority levels (0 front, 3 back)
-    // Within the same priority level, lower plane index wins: BG0 > BG1 > BG2 > BG3
+    // Within the same priority level: OBJ > BG0 > BG1 > BG2 > BG3
     struct LayerCandidate {
         uint32_t color;
         int      plane;
         int      priority;
+        bool     semiTransparent;
+        int      rank;
     };
 
     for (int x = 0; x < 256; ++x) {
-        LayerCandidate candidates[4];
+        LayerCandidate candidates[5];
         int numCandidates = 0;
 
         for (int p = 0; p < 4; ++p) {
@@ -128,17 +141,24 @@ void NdsCompositor_RenderScanline(NdsDisplayEngine* engine,
                 candidates[numCandidates].color = bgLines[p][x];
                 candidates[numCandidates].plane = p;
                 candidates[numCandidates].priority = engine->bg[p].priority;
+                candidates[numCandidates].semiTransparent = false;
+                candidates[numCandidates].rank = engine->bg[p].priority * 10 + 1 + p;
                 numCandidates++;
             }
         }
 
-        // Sort candidates by priority ascending (0 = highest priority, front)
-        // If priorities equal, plane index ascending (0 > 1 > 2 > 3)
+        if (objActive && spriteLine[x].color != NDS_PIXEL_TRANSPARENT) {
+            candidates[numCandidates].color = spriteLine[x].color;
+            candidates[numCandidates].plane = 4;
+            candidates[numCandidates].priority = spriteLine[x].priority;
+            candidates[numCandidates].semiTransparent = spriteLine[x].semiTransparent;
+            candidates[numCandidates].rank = spriteLine[x].priority * 10 + 0;
+            numCandidates++;
+        }
+
+        // Sort candidates by ascending rank (lower rank = higher priority, front)
         std::sort(candidates, candidates + numCandidates, [](const LayerCandidate& a, const LayerCandidate& b) {
-            if (a.priority != b.priority) {
-                return a.priority < b.priority;
-            }
-            return a.plane < b.plane;
+            return a.rank < b.rank;
         });
 
         if (numCandidates == 0) {
@@ -147,8 +167,11 @@ void NdsCompositor_RenderScanline(NdsDisplayEngine* engine,
             uint32_t finalColor = candidates[0].color;
             int topPlane = candidates[0].plane;
 
+            bool isAlphaMode = (engine->blend.blendMode == 1 && (engine->blend.srcMask & (1 << topPlane)));
+            bool isObjSemiTransparent = (topPlane == 4 && candidates[0].semiTransparent);
+
             // Check alpha blending
-            if (engine->blend.blendMode == 1 && (engine->blend.srcMask & (1 << topPlane))) {
+            if (isAlphaMode || isObjSemiTransparent) {
                 // Search for 2nd target plane in dstMask
                 uint32_t dstColor = 0;
                 bool hasDst = false;
