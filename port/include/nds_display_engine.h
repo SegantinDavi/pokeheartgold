@@ -96,6 +96,7 @@ typedef struct {
     NdsDisplayControl dispcnt;
     uint32_t          frameBuffer[NDS_SCREEN_HEIGHT][NDS_SCREEN_WIDTH]; /**< RGBA8 */
     uint32_t*         bg0_3d_buffer; /**< 256x192 RGBA8, filled by G3_SwapBuffers (Main only) */
+    uint32_t          objVramOffset; /**< Byte offset into LCDC VRAM for OBJ character tiles */
 } NdsDisplayEngine;
 
 #ifdef __cplusplus

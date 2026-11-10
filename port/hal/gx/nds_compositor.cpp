@@ -122,7 +122,8 @@ void NdsCompositor_RenderScanline(NdsDisplayEngine* engine,
             NdsSprite_ParseOam(oam, cachedOam);
             cachedOamPtr = oam;
         }
-        NdsSprite_RenderScanline(cachedOam, scanline, vram, objPltt, spriteLine, engine->dispcnt.objMapChar1D);
+        const uint8_t* objVram = vram + engine->objVramOffset;
+        NdsSprite_RenderScanline(cachedOam, scanline, objVram, objPltt, spriteLine, engine->dispcnt.objMapChar1D);
         objActive = true;
     }
 

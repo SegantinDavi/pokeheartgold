@@ -67,55 +67,80 @@ extern "C" {
 bool NdsAuthenticDemo_Init(void) {
     if (!s_assetsLoaded) {
         // Load authentic Pokémon HeartGold Title Screen graphics from files/demo/title/titledemo/
-        // 1. Palette: titledemo_00000002.NCLR (512 bytes raw palette at offset 40)
-        std::string nclrPath = "files/demo/title/titledemo/titledemo_00000002.NCLR";
+        // 1. Palette: titledemo_00000004.NCLR (HeartGold Gold palette, 512 bytes raw palette at offset 40)
+        std::string nclrPath = "files/demo/title/titledemo/titledemo_00000004.NCLR";
         ReadFileData(nclrPath, 40, gHwPltt, 512);
         ReadFileData(nclrPath, 40, gHwDbPltt, 512);
 
-        // Also populate OBJ palette with contrasting vivid colors for interactive sprites
+        // Also populate OBJ palette with vivid colors for interactive sprites
         uint16_t* objPltt = reinterpret_cast<uint16_t*>(gHwPltt + 512);
         uint16_t* dbObjPltt = reinterpret_cast<uint16_t*>(gHwDbPltt + 512);
-        objPltt[1] = 0x001F; // Red
-        objPltt[2] = 0x7FE0; // Gold / Yellow
-        objPltt[3] = 0x7FFF; // White
-        dbObjPltt[1] = 0x001F;
-        dbObjPltt[2] = 0x7FE0;
-        dbObjPltt[3] = 0x7FFF;
+        // Palette 0: 0=transparent, 1=black, 2=crimson, 3=white, 4=grey, 5=gold
+        dbObjPltt[0] = 0x0000;
+        dbObjPltt[1] = 0x0842; // Charcoal black outline
+        dbObjPltt[2] = 0x001F; // Crimson red
+        dbObjPltt[3] = 0x7FFF; // Pure white
+        dbObjPltt[4] = 0x5294; // Shaded silver
+        dbObjPltt[5] = 0x03FF; // Golden ring
 
-        // 2. Main screen Title Logo tiles: titledemo_00000001.NCGR (30720 bytes at offset 48)
-        std::string ncgrMainPath = "files/demo/title/titledemo/titledemo_00000001.NCGR";
+        objPltt[0] = 0x0000;
+        objPltt[1] = 0x0842;
+        objPltt[2] = 0x001F;
+        objPltt[3] = 0x7FFF;
+        objPltt[4] = 0x5294;
+        objPltt[5] = 0x03FF;
+
+        // 2. Main screen HeartGold Title Logo tiles: titledemo_00000003.NCGR (30720 bytes at offset 48)
+        std::string ncgrMainPath = "files/demo/title/titledemo/titledemo_00000003.NCGR";
         ReadFileData(ncgrMainPath, 48, gHwLcdcVram + 0, 30720);
 
         // 3. Main screen Title Logo screen map: titledemo_00000000.NSCR (2048 bytes at offset 36)
         std::string nscrMainPath = "files/demo/title/titledemo/titledemo_00000000.NSCR";
         ReadFileData(nscrMainPath, 36, gHwLcdcVram + 0x8000, 2048);
 
-        // 4. Sub screen bottom artwork: titledemo_00000036.NCGR (offset 48) and 00000037.NSCR (offset 36)
-        std::string ncgrSubPath = "files/demo/title/titledemo/titledemo_00000036.NCGR";
+        // 4. Sub screen HeartGold bottom artwork: titledemo_00000034.NCGR (offset 48, 49152 bytes) and 00000035.NSCR (offset 36, 1536 bytes)
+        std::string ncgrSubPath = "files/demo/title/titledemo/titledemo_00000034.NCGR";
         ReadFileData(ncgrSubPath, 48, gHwLcdcVram + 0x10000, 49152);
 
-        std::string nscrSubPath = "files/demo/title/titledemo/titledemo_00000037.NSCR";
-        ReadFileData(nscrSubPath, 36, gHwLcdcVram + 0x1C000, 2048);
+        std::string nscrSubPath = "files/demo/title/titledemo/titledemo_00000035.NSCR";
+        ReadFileData(nscrSubPath, 36, gHwLcdcVram + 0x1C000, 1536);
 
-        // 5. Create a stylized 8x8 Pokéball sprite tile in OBJ VRAM (offset 0x20000)
+        // 5. Create a stylized 16x16 Pokéball sprite in OBJ VRAM (offset 0x20000)
         uint8_t* objVram = gHwLcdcVram + 0x20000;
-        std::memset(objVram, 0, 32);
-        // Draw 8x8 circular Pokéball: top red (1), bottom white (3), center ring (2)
-        const uint8_t pokeball[8][8] = {
-            {0, 0, 1, 1, 1, 1, 0, 0},
-            {0, 1, 1, 1, 1, 1, 1, 0},
-            {1, 1, 1, 1, 1, 1, 1, 1},
-            {2, 2, 2, 3, 3, 2, 2, 2},
-            {2, 2, 2, 3, 3, 2, 2, 2},
-            {3, 3, 3, 3, 3, 3, 3, 3},
-            {0, 3, 3, 3, 3, 3, 3, 0},
-            {0, 0, 3, 3, 3, 3, 0, 0}
+        std::memset(objVram, 0, 128); // 4 tiles * 32 bytes
+
+        const uint8_t pokeball16[16][16] = {
+            {0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0},
+            {0, 0, 0, 1, 1, 2, 2, 2, 2, 2, 2, 1, 1, 0, 0, 0},
+            {0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0},
+            {0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0},
+            {0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0},
+            {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+            {1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1},
+            {1, 1, 1, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1, 1, 1},
+            {1, 1, 1, 1, 1, 1, 1, 5, 5, 1, 1, 1, 1, 1, 1, 1},
+            {1, 4, 4, 4, 4, 4, 1, 1, 1, 1, 4, 4, 4, 4, 4, 1},
+            {1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1},
+            {0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0},
+            {0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0},
+            {0, 0, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 0, 0},
+            {0, 0, 0, 1, 1, 3, 3, 3, 3, 3, 3, 1, 1, 0, 0, 0},
+            {0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0}
         };
-        for (int y = 0; y < 8; ++y) {
-            for (int x = 0; x < 8; x += 2) {
-                uint8_t p0 = pokeball[y][x];
-                uint8_t p1 = pokeball[y][x + 1];
-                objVram[y * 4 + (x / 2)] = (p1 << 4) | (p0 & 0x0F);
+
+        for (int tr = 0; tr < 2; ++tr) {
+            for (int tc = 0; tc < 2; ++tc) {
+                int tileIdx = tr * 2 + tc;
+                for (int ty = 0; ty < 8; ++ty) {
+                    int py = tr * 8 + ty;
+                    for (int tx = 0; tx < 8; tx += 2) {
+                        int px0 = tc * 8 + tx;
+                        int px1 = tc * 8 + tx + 1;
+                        uint8_t p0 = pokeball16[py][px0];
+                        uint8_t p1 = pokeball16[py][px1];
+                        objVram[tileIdx * 32 + ty * 4 + (tx / 2)] = (p1 << 4) | (p0 & 0x0F);
+                    }
+                }
             }
         }
         s_assetsLoaded = true;
@@ -124,7 +149,7 @@ bool NdsAuthenticDemo_Init(void) {
     // Configure Display Engines:
     // Main Engine (Top screen):
     // BG0: 3D Geometry pass (Ho-Oh / Sacred Fire 3D space)
-    // BG1: Authentic 2D Title Logo
+    // BG1: Authentic 2D HeartGold Title Logo
     // OBJ: Particle effects
     gNdsGfx.main.dispcnt.dispMode = 1;
     gNdsGfx.main.dispcnt.bgMode = 0;
@@ -146,12 +171,13 @@ bool NdsAuthenticDemo_Init(void) {
     gNdsGfx.main.bg[1].scrollY = 0;
 
     // Sub Engine (Touchscreen):
-    // BG1: Authentic Touchscreen Background Art
+    // BG1: Authentic HeartGold Touchscreen Background Art
     // OBJ: Stylus touch cursor
     gNdsGfx.sub.dispcnt.dispMode = 1;
     gNdsGfx.sub.dispcnt.bgMode = 0;
     gNdsGfx.sub.dispcnt.visiblePlanes = (1 << 1) | (1 << 4);
     gNdsGfx.sub.dispcnt.objMapChar1D = true;
+    gNdsGfx.sub.objVramOffset = 0x20000;
 
     gNdsGfx.sub.bg[1].enabled = true;
     gNdsGfx.sub.bg[1].mode = NDS_BGMODE_TEXT;
@@ -171,24 +197,27 @@ void NdsAuthenticDemo_RenderFrame(int frameCount, int touchX, int touchY, bool t
         NdsAuthenticDemo_Init();
     }
 
-    // 1. Update Sub-screen OAM Sprite (Touch cursor Pokéball following stylus)
+    // 1. Update Sub-screen OAM Sprite (Interactive 16x16 Pokéball following stylus or floating smoothly)
     uint16_t* subOam = reinterpret_cast<uint16_t*>(gHwDbOam);
-    int spriteX = touching ? touchX - 4 : 124;
-    int spriteY = touching ? touchY - 4 : 140 + static_cast<int>(std::sin(frameCount * 0.1) * 6.0);
+    int spriteX = touching ? (touchX - 8) : (120 + static_cast<int>(std::sin(frameCount * 0.05) * 45.0));
+    int spriteY = touching ? (touchY - 8) : (140 + static_cast<int>(std::cos(frameCount * 0.08) * 10.0));
 
-    // Clamp inside viewport
+    // Clamp inside 256x192 viewport
     if (spriteX < 0) spriteX = 0;
-    if (spriteX > 248) spriteX = 248;
+    if (spriteX > 240) spriteX = 240;
     if (spriteY < 0) spriteY = 0;
-    if (spriteY > 184) spriteY = 184;
+    if (spriteY > 176) spriteY = 176;
 
-    subOam[0] = static_cast<uint16_t>(spriteY & 0xFF); // Attr0
-    subOam[1] = static_cast<uint16_t>(spriteX & 0x1FF); // Attr1 (size=0, 8x8)
-    subOam[2] = 0; // Attr2 (charName=0, priority=0)
+    subOam[0] = static_cast<uint16_t>(spriteY & 0xFF);                   // Attr0 (Y coord, shape=0 Square, 4bpp)
+    subOam[1] = static_cast<uint16_t>((1 << 14) | (spriteX & 0x1FF));    // Attr1 (size=1 16x16, X coord)
+    subOam[2] = 0;                                                      // Attr2 (charName=0 in Sub OBJ VRAM, priority=0)
 
-    // Disable remaining sprites
+    // Disable remaining 127 sprites
     for (int i = 1; i < 128; ++i) {
         subOam[i * 4 + 0] = (1 << 9);
+        subOam[i * 4 + 1] = 0;
+        subOam[i * 4 + 2] = 0;
+        subOam[i * 4 + 3] = 0;
     }
 
     // 2. Render 3D Geometry Pass into FBO (Ho-Oh Sacred Gold 3D prism and sparkling celestial field)
