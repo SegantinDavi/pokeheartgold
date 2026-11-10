@@ -6,11 +6,14 @@
 #include "gx_pipeline.h"
 #include "port_gx.h"
 #include "nds_compositor.h"
+#include "nds_authentic_demo.h"
 #include "display/display_manager.h"
+#include <SDL.h>
 #include <cstring>
 #include <algorithm>
 
 NdsGraphicsPipeline gNdsGfx;
+static uint64_t s_renderStartPerf = 0;
 
 extern "C" {
 
@@ -19,6 +22,7 @@ void NdsGfx_Init(void) {
     gNdsGfx.dispSelect = GX_DISP_SELECT_MAIN_SUB;
     PortHwRegisters_Init();
     G3Pipeline_Init(&gNdsGfx.g3);
+    NdsAuthenticDemo_Init();
 }
 
 void NdsGfx_SyncRegisters(NdsDisplayEngine* engine, bool isSub) {
@@ -109,6 +113,7 @@ void NdsGfx_SyncRegisters(NdsDisplayEngine* engine, bool isSub) {
 }
 
 void NdsGfx_RenderMain(void) {
+    s_renderStartPerf = SDL_GetPerformanceCounter();
     NdsGfx_SyncRegisters(&gNdsGfx.main, false);
     for (int y = 0; y < 192; ++y) {
         NdsCompositor_RenderScanline(&gNdsGfx.main, y, gHwLcdcVram, gHwOam, reinterpret_cast<const uint16_t*>(gHwPltt));
@@ -122,10 +127,18 @@ void NdsGfx_RenderSub(void) {
         NdsCompositor_RenderScanline(&gNdsGfx.sub, y, gHwLcdcVram, gHwDbOam, reinterpret_cast<const uint16_t*>(gHwDbPltt));
     }
     NdsCompositor_ApplyBrightness(gNdsGfx.sub.frameBuffer, gNdsGfx.sub.blend.masterBrightness);
+
+    // Frame compositing budget measurement (T057, SC-005)
+    uint64_t endPerf = SDL_GetPerformanceCounter();
+    double elapsedMs = (static_cast<double>(endPerf - s_renderStartPerf) * 1000.0) / static_cast<double>(SDL_GetPerformanceFrequency());
+    if (elapsedMs > 4.0) {
+        SDL_Log("Warning: 2D/3D compositing exceeded 4 ms budget: %.2f ms", elapsedMs);
+    }
 }
 
 void NdsGfx_PresentFrame(void) {
-    // Route composite buffers respecting display select
+    // Route composite buffers respecting display select (T051)
+    gNdsGfx.dispSelect = GX_GetDispSelect();
     GX_RouteCompositeBuffers(
         reinterpret_cast<const uint32_t*>(gNdsGfx.main.frameBuffer),
         reinterpret_cast<const uint32_t*>(gNdsGfx.sub.frameBuffer)

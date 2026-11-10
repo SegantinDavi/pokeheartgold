@@ -7,6 +7,7 @@
 #include "port_game_core.h"
 #include "port_os.h"
 #include "port_gx.h"
+#include "gx_pipeline.h"
 #include "nitro.h"
 #include <chrono>
 #include <thread>
@@ -207,4 +208,28 @@ TEST_CASE(EngineSync_CompositeBufferRouting) {
     ASSERT_EQ(redRgba, top[0]);
     ASSERT_EQ(greenRgba, touch[0]);
 }
+
+TEST_CASE(EngineSync_NdsGfxPresentFrameDispSelectSwap) {
+    NdsGfx_Init();
+    for (int y = 0; y < 192; ++y) {
+        for (int x = 0; x < 256; ++x) {
+            gNdsGfx.main.frameBuffer[y][x] = 0xFFAABBCC;
+            gNdsGfx.sub.frameBuffer[y][x] = 0xFFDDEEFF;
+        }
+    }
+
+    GX_SetDispSelect(GX_DISP_SELECT_MAIN_SUB);
+    NdsGfx_PresentFrame();
+
+    ASSERT_EQ(0xFFAABBCC, GX_GetTopScreenPixels()[0]);
+    ASSERT_EQ(0xFFDDEEFF, GX_GetTouchScreenPixels()[0]);
+
+    // Swap mid-frame
+    GX_SetDispSelect(GX_DISP_SELECT_SUB_MAIN);
+    NdsGfx_PresentFrame();
+
+    ASSERT_EQ(0xFFDDEEFF, GX_GetTopScreenPixels()[0]);
+    ASSERT_EQ(0xFFAABBCC, GX_GetTouchScreenPixels()[0]);
+}
+
 

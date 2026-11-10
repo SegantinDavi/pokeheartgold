@@ -19,6 +19,7 @@
 #include "port_g3.h"
 #include "port_card.h"
 #include "port_snd.h"
+#include "nds_authentic_demo.h"
 #include "display/display_manager.h"
 #include "display/display_config.h"
 #include "input/input_manager.h"
@@ -236,9 +237,11 @@ int main(int argc, char** argv) {
             default: break;
         }
 
-        // Render interactive dual-screen presentation card & touch feedback
+        // Render interactive dual-screen presentation card or authentic graphics demo
         if (GX_IsTestPatternEnabled()) {
             GX_DrawTestPattern(frameCount, touch.screenX, touch.screenY, touch.touching, layoutName);
+        } else {
+            NdsAuthenticDemo_RenderFrame(frameCount, touch.screenX, touch.screenY, touch.touching);
         }
 
         // Render current 2D/3D graphics frame into dual viewports

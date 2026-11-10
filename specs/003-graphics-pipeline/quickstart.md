@@ -68,9 +68,14 @@ The graphics pipeline is compiled as part of the `port` static library target. N
 ./build/pokeheartgold
 ```
 
-To switch between the test pattern and authentic Pokémon HeartGold visual demo at runtime:
-- Press **F9** while the application is running to toggle between the interactive test card and live graphics rendering.
-- Or call `GX_SetTestPatternEnabled(false)` during `GX_Init` / `main.cpp` to boot directly into live graphics mode.
+### Enabling the Real Pipeline & Authentic Game Visual Demo
+
+By default, the native PC port launches directly into the live graphics pipeline, rendering authentic Pokémon HeartGold 2D & 3D Title Screen assets loaded from `files/demo/title/titledemo/`:
+- **Top Screen (Main)**: Fixed-function 3D celestial geometry pass with spinning Sacred Gold emblem and sparkle particles rendered into the FBO and read back into BG0, blended with the authentic Pokémon HeartGold 2D Title Logo on BG1.
+- **Bottom Screen (Sub/Touchscreen)**: Authentic 2D Title Screen Touch artwork on BG1, with an interactive stylus/mouse-controlled Pokéball sprite on the OBJ layer following touchscreen clicks and drags.
+- **F9 Hotkey**: Press **F9** at any time while the application is running to toggle between the live authentic graphics pipeline and the interactive diagnostic test pattern card.
+- **F10 Hotkey**: Cycle through dual-screen viewport layouts (Side-by-Side, Swapped Horizontal, Classic DS Vertical, Swapped Vertical).
+- **F11 Hotkey**: Toggle borderless fullscreen display.
 
 ---
 

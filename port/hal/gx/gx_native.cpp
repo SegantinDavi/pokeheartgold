@@ -22,7 +22,7 @@ uint32_t gTouchScreenPixels[SCREEN_PIXELS];
 bool gMainDispOn = true;
 bool gSubDispOn = true;
 int s_dispSelect = GX_DISP_SELECT_MAIN_SUB;
-bool s_testPatternEnabled = true;
+bool s_testPatternEnabled = false;
 
 } // anonymous namespace
 
@@ -34,7 +34,7 @@ void GX_Init(void) {
     gMainDispOn = true;
     gSubDispOn = true;
     s_dispSelect = GX_DISP_SELECT_MAIN_SUB;
-    s_testPatternEnabled = true;
+    s_testPatternEnabled = false;
     NdsGfx_Init();
 }
 

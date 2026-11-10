@@ -156,47 +156,54 @@ void NdsCompositor_RenderScanline(NdsDisplayEngine* engine,
             numCandidates++;
         }
 
-        // Sort candidates by ascending rank (lower rank = higher priority, front)
-        std::sort(candidates, candidates + numCandidates, [](const LayerCandidate& a, const LayerCandidate& b) {
-            return a.rank < b.rank;
-        });
-
         if (numCandidates == 0) {
             engine->frameBuffer[scanline][x] = backdrop;
-        } else {
-            uint32_t finalColor = candidates[0].color;
-            int topPlane = candidates[0].plane;
+            continue;
+        }
 
-            bool isAlphaMode = (engine->blend.blendMode == 1 && (engine->blend.srcMask & (1 << topPlane)));
-            bool isObjSemiTransparent = (topPlane == 4 && candidates[0].semiTransparent);
+        // Insertion sort for small candidate array (0..5 elements)
+        for (int i = 1; i < numCandidates; ++i) {
+            LayerCandidate key = candidates[i];
+            int j = i - 1;
+            while (j >= 0 && candidates[j].rank > key.rank) {
+                candidates[j + 1] = candidates[j];
+                j--;
+            }
+            candidates[j + 1] = key;
+        }
 
-            // Check alpha blending
-            if (isAlphaMode || isObjSemiTransparent) {
-                // Search for 2nd target plane in dstMask
-                uint32_t dstColor = 0;
-                bool hasDst = false;
+        uint32_t finalColor = candidates[0].color;
+        int topPlane = candidates[0].plane;
 
-                for (int c = 1; c < numCandidates; ++c) {
-                    if (engine->blend.dstMask & (1 << candidates[c].plane)) {
-                        dstColor = candidates[c].color;
-                        hasDst = true;
-                        break;
-                    }
-                }
+        bool isAlphaMode = (engine->blend.blendMode == 1 && (engine->blend.srcMask & (1 << topPlane)));
+        bool isObjSemiTransparent = (topPlane == 4 && candidates[0].semiTransparent);
 
-                // If no lower plane matched dstMask, check backdrop (bit 5 in BLDCNT)
-                if (!hasDst && (engine->blend.dstMask & (1 << 5))) {
-                    dstColor = backdrop;
+        // Check alpha blending
+        if (isAlphaMode || isObjSemiTransparent) {
+            // Search for 2nd target plane in dstMask
+            uint32_t dstColor = 0;
+            bool hasDst = false;
+
+            for (int c = 1; c < numCandidates; ++c) {
+                if (engine->blend.dstMask & (1 << candidates[c].plane)) {
+                    dstColor = candidates[c].color;
                     hasDst = true;
-                }
-
-                if (hasDst) {
-                    finalColor = NdsCompositor_AlphaBlend(finalColor, dstColor, engine->blend.evA, engine->blend.evB);
+                    break;
                 }
             }
 
-            engine->frameBuffer[scanline][x] = finalColor;
+            // If no lower plane matched dstMask, check backdrop (bit 5 in BLDCNT)
+            if (!hasDst && (engine->blend.dstMask & (1 << 5))) {
+                dstColor = backdrop;
+                hasDst = true;
+            }
+
+            if (hasDst) {
+                finalColor = NdsCompositor_AlphaBlend(finalColor, dstColor, engine->blend.evA, engine->blend.evB);
+            }
         }
+
+        engine->frameBuffer[scanline][x] = finalColor;
     }
 }
 
