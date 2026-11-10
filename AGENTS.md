@@ -55,11 +55,15 @@ The original game was designed specifically for the **Nintendo DS** hardware arc
   - Route NitroSDK audio synthesizer output to host audio streams via SDL Audio or miniaudio.
 
 ### Phase 4: Graphics Pipeline (2D and 3D)
-- [ ] **2D Graphics Engine (`GX_`, `G2_`)**:
-  - Emulate background engines (BG0, BG1, BG2, BG3) in text, affine, and extended affine modes.
-  - Render OAM sprites, windowing planes, and color palette blending.
-- [ ] **3D Graphics Engine (`G3_`, `G3X_`)**:
-  - Emulate the fixed-function 3D vertex pipeline, geometry matrix stacks, and polygon rasterization (software rasterizer or OpenGL ES / modern OpenGL translation layer).
+- [x] **2D Graphics Engine (`GX_`, `G2_`)**:
+  - Emulate background engines (BG0, BG1, BG2, BG3) in text, affine, and extended affine modes with seamless wrapping and 4bpp/8bpp tile decoding.
+  - Render OAM sprites (1D/2D mapping, H/V flips, size decoding, scanline clipping, priority ranking 0..3).
+  - Scanline compositor with 5-layer candidate priority sandwiching, alpha blend control (EVA/EVB 0..16), and master brightness fade (+16 white / -16 black).
+- [x] **3D Graphics Engine (`G3_`, `G3X_`)**:
+  - Emulate fixed-function 3D vertex/matrix pipeline (Projection, Position, Vector stacks with hardware depth clamping) translating to OpenGL Core/Compatibility.
+  - Offscreen 256×192 FBO with depth renderbuffer readback into BG0 layer for 2D/3D compositing.
+  - Texture cache supporting all 7 NDS texture formats with palette binding and flush.
+  - Interactive visual demo previewing authentic Pokémon HeartGold 2D & 3D Title Screen assets and responsive stylus/mouse cursor Pokéball.
 
 ### Phase 5: Overlay Architecture & ARM7 Subsystems
 - [ ] **Overlay Loading Strategy**:
