@@ -197,6 +197,10 @@ int main(int argc, char** argv) {
                 bool down = (event.type == SDL_KEYDOWN);
                 if (down && event.key.keysym.sym == SDLK_ESCAPE) {
                     running = false;
+                } else if (down && event.key.keysym.sym == SDLK_F9) {
+                    bool enabled = !GX_IsTestPatternEnabled();
+                    GX_SetTestPatternEnabled(enabled);
+                    std::cout << "[Graphics] Test pattern " << (enabled ? "ENABLED" : "DISABLED (Live Pipeline)") << "\n";
                 } else if (down && event.key.keysym.sym == SDLK_F10) {
                     DisplayManager_CycleLayoutMode();
                 } else if (down && event.key.keysym.sym == SDLK_F11) {

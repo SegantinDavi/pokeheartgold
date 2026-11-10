@@ -41,11 +41,11 @@ All new source files live under `port/` (HAL) or `port/tests/` (tests). No `src/
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T009 Implement `NdsGfx_Init` in `port/hal/gx/gx_pipeline.cpp`: define `gNdsGfx` singleton, zero-initialize both `NdsDisplayEngine` fields and `Nds3DPipelineState`, call `PortHwRegisters_Init`; consolidate `port/hal/gx/gx_native.cpp` so that `GX_Load*` functions directly populate `gHwLcdcVram`, `gHwPltt`, and `gHwDbPltt` (removing local `gVram`/`gMainBGPltt` arrays); update `port/hal/gx/gx_native.cpp::GX_Init` to call `NdsGfx_Init`
-- [ ] T010 Implement `NdsGfx_PresentFrame` in `port/hal/gx/gx_pipeline.cpp`: call `GX_RouteCompositeBuffers` with `main.frameBuffer`/`sub.frameBuffer` respecting `gNdsGfx.dispSelect`, then `DisplayManager_PresentFrame`
-- [ ] T011 Wire `port/hal/gx/gx_native.cpp::GX_RenderFrame` to dispatch: when `!GX_IsTestPatternEnabled()`, call `NdsGfx_RenderMain`, `NdsGfx_RenderSub`, `NdsGfx_PresentFrame` instead of the test pattern path; bind F9 hotkey in `port/main.cpp` to toggle `GX_SetTestPatternEnabled(!GX_IsTestPatternEnabled())` dynamically at runtime
-- [ ] T012 [P] Implement `NdsCompositor_AlphaBlend` in `port/hal/gx/nds_compositor.cpp`: two-plane EVA/EVB blend per channel using NDS formula `out = clamp(A*EVA/16 + B*EVB/16, 0, 255)` per channel
-- [ ] T013 [P] Implement `NdsCompositor_ApplyBrightness` in `port/hal/gx/nds_compositor.cpp`: darken formula `out = color * (16 - level) / 16`; lighten formula `out = color + (255 - color) * level / 16`; apply to all 192×256 RGBA8 pixels; handle `level == 0` as no-op
+- [X] T009 Implement `NdsGfx_Init` in `port/hal/gx/gx_pipeline.cpp`: define `gNdsGfx` singleton, zero-initialize both `NdsDisplayEngine` fields and `Nds3DPipelineState`, call `PortHwRegisters_Init`; consolidate `port/hal/gx/gx_native.cpp` so that `GX_Load*` functions directly populate `gHwLcdcVram`, `gHwPltt`, and `gHwDbPltt` (removing local `gVram`/`gMainBGPltt` arrays); update `port/hal/gx/gx_native.cpp::GX_Init` to call `NdsGfx_Init`
+- [X] T010 Implement `NdsGfx_PresentFrame` in `port/hal/gx/gx_pipeline.cpp`: call `GX_RouteCompositeBuffers` with `main.frameBuffer`/`sub.frameBuffer` respecting `gNdsGfx.dispSelect`, then `DisplayManager_PresentFrame`
+- [X] T011 Wire `port/hal/gx/gx_native.cpp::GX_RenderFrame` to dispatch: when `!GX_IsTestPatternEnabled()`, call `NdsGfx_RenderMain`, `NdsGfx_RenderSub`, `NdsGfx_PresentFrame` instead of the test pattern path; bind F9 hotkey in `port/main.cpp` to toggle `GX_SetTestPatternEnabled(!GX_IsTestPatternEnabled())` dynamically at runtime
+- [X] T012 [P] Implement `NdsCompositor_AlphaBlend` in `port/hal/gx/nds_compositor.cpp`: two-plane EVA/EVB blend per channel using NDS formula `out = clamp(A*EVA/16 + B*EVB/16, 0, 255)` per channel
+- [X] T013 [P] Implement `NdsCompositor_ApplyBrightness` in `port/hal/gx/nds_compositor.cpp`: darken formula `out = color * (16 - level) / 16`; lighten formula `out = color + (255 - color) * level / 16`; apply to all 192×256 RGBA8 pixels; handle `level == 0` as no-op
 
 **Checkpoint**: Build succeeds; `GX_RenderFrame` calls `NdsGfx_PresentFrame`; with test pattern disabled the screens show solid black (empty framebuffers). `NdsCompositor_AlphaBlend` and `ApplyBrightness` are callable.
 
