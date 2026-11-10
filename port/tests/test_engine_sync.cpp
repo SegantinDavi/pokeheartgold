@@ -7,6 +7,8 @@
 #include "port_game_core.h"
 #include "port_os.h"
 #include "port_gx.h"
+#include "gx_pipeline.h"
+#include "nds_authentic_demo.h"
 #include "nitro.h"
 #include <chrono>
 #include <thread>
@@ -207,4 +209,50 @@ TEST_CASE(EngineSync_CompositeBufferRouting) {
     ASSERT_EQ(redRgba, top[0]);
     ASSERT_EQ(greenRgba, touch[0]);
 }
+
+TEST_CASE(EngineSync_NdsGfxPresentFrameDispSelectSwap) {
+    NdsGfx_Init();
+    for (int y = 0; y < 192; ++y) {
+        for (int x = 0; x < 256; ++x) {
+            gNdsGfx.main.frameBuffer[y][x] = 0xFFAABBCC;
+            gNdsGfx.sub.frameBuffer[y][x] = 0xFFDDEEFF;
+        }
+    }
+
+    GX_SetDispSelect(GX_DISP_SELECT_MAIN_SUB);
+    NdsGfx_PresentFrame();
+
+    ASSERT_EQ(0xFFAABBCC, GX_GetTopScreenPixels()[0]);
+    ASSERT_EQ(0xFFDDEEFF, GX_GetTouchScreenPixels()[0]);
+
+    // Swap mid-frame
+    GX_SetDispSelect(GX_DISP_SELECT_SUB_MAIN);
+    NdsGfx_PresentFrame();
+
+    ASSERT_EQ(0xFFDDEEFF, GX_GetTopScreenPixels()[0]);
+    ASSERT_EQ(0xFFAABBCC, GX_GetTouchScreenPixels()[0]);
+}
+
+TEST_CASE(EngineSync_AuthenticDemoPipelinePixels) {
+    NdsGfx_Init();
+    NdsAuthenticDemo_RenderFrame(0, 100, 100, false);
+    NdsGfx_RenderMain();
+    NdsGfx_RenderSub();
+    NdsGfx_PresentFrame();
+
+    int nonBlackTop = 0;
+    int nonBlackSub = 0;
+    uint32_t* top = GX_GetTopScreenPixels();
+    uint32_t* sub = GX_GetTouchScreenPixels();
+
+    for (int i = 0; i < 256 * 192; ++i) {
+        if ((top[i] & 0x00FFFFFF) != 0) nonBlackTop++;
+        if ((sub[i] & 0x00FFFFFF) != 0) nonBlackSub++;
+    }
+
+    ASSERT_TRUE(nonBlackTop > 0);
+    ASSERT_TRUE(nonBlackSub > 0);
+}
+
+
 

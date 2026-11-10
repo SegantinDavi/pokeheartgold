@@ -39,7 +39,7 @@ set(PORT_COMMON_INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/include
 )
 
-# Automated testing
+# Automated testing and graphics pipeline sources
 enable_testing()
 
 file(GLOB_RECURSE PORT_TEST_SOURCES
@@ -47,6 +47,7 @@ file(GLOB_RECURSE PORT_TEST_SOURCES
     "port/tests/*.c"
 )
 
+# Includes HAL graphics pipeline (gx_pipeline, nds_compositor, nds_bg_renderer, nds_sprite_renderer, g3_pipeline, nds_texture_cache, nds_authentic_demo)
 file(GLOB_RECURSE PORT_HAL_SOURCES
     "port/hal/*.cpp"
     "port/hal/*.c"
