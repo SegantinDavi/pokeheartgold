@@ -4,6 +4,9 @@
  */
 
 #include "nds_compositor.h"
+#include "nds_bg_renderer.h"
+#include "nds_sprite_renderer.h"
+#include "port_gx.h"
 #include <algorithm>
 #include <cstring>
 
@@ -69,11 +72,109 @@ void NdsCompositor_RenderScanline(NdsDisplayEngine* engine,
                                   const uint8_t* oam,
                                   const uint16_t* pltt) {
     if (!engine || scanline < 0 || scanline >= 192) return;
-    // Scanline composite implementation completed in Phase 3
-    (void)vram;
-    (void)oam;
-    (void)pltt;
-    std::memset(engine->frameBuffer[scanline], 0, sizeof(engine->frameBuffer[scanline]));
+
+    // Fast-path: display disabled
+    if (engine->dispcnt.dispMode == 0) {
+        std::memset(engine->frameBuffer[scanline], 0, sizeof(engine->frameBuffer[scanline]));
+        return;
+    }
+
+    // Default backdrop color is BG palette index 0
+    uint32_t backdrop = pltt ? GX_RGB555ToRGBA(pltt[0]) : 0xFF000000u;
+
+    // Fast-path: all planes disabled
+    if (engine->dispcnt.visiblePlanes == 0) {
+        for (int x = 0; x < 256; ++x) {
+            engine->frameBuffer[scanline][x] = backdrop;
+        }
+        return;
+    }
+
+    // Render enabled BG planes for this scanline
+    uint32_t bgLines[4][256];
+    bool bgActive[4] = {false, false, false, false};
+
+    for (int i = 0; i < 4; ++i) {
+        if ((engine->dispcnt.visiblePlanes & (1 << i)) && engine->bg[i].enabled) {
+            bgActive[i] = true;
+            if (i == 0 && engine->dispcnt.bg0Is3D && engine->bg0_3d_buffer) {
+                // BG0 fed from 3D FBO readback
+                const uint32_t* src3D = &engine->bg0_3d_buffer[scanline * 256];
+                std::memcpy(bgLines[i], src3D, 256 * sizeof(uint32_t));
+            } else if (engine->bg[i].mode == NDS_BGMODE_TEXT) {
+                NdsBg_RenderText(&engine->bg[i], scanline, vram, pltt, bgLines[i]);
+            } else {
+                NdsBg_RenderAffine(&engine->bg[i], scanline, vram, pltt, bgLines[i]);
+            }
+        } else {
+            std::memset(bgLines[i], 0, sizeof(bgLines[i]));
+        }
+    }
+
+    // Priority sort order: 4 priority levels (0 front, 3 back)
+    // Within the same priority level, lower plane index wins: BG0 > BG1 > BG2 > BG3
+    struct LayerCandidate {
+        uint32_t color;
+        int      plane;
+        int      priority;
+    };
+
+    for (int x = 0; x < 256; ++x) {
+        LayerCandidate candidates[4];
+        int numCandidates = 0;
+
+        for (int p = 0; p < 4; ++p) {
+            if (bgActive[p] && bgLines[p][x] != NDS_PIXEL_TRANSPARENT) {
+                candidates[numCandidates].color = bgLines[p][x];
+                candidates[numCandidates].plane = p;
+                candidates[numCandidates].priority = engine->bg[p].priority;
+                numCandidates++;
+            }
+        }
+
+        // Sort candidates by priority ascending (0 = highest priority, front)
+        // If priorities equal, plane index ascending (0 > 1 > 2 > 3)
+        std::sort(candidates, candidates + numCandidates, [](const LayerCandidate& a, const LayerCandidate& b) {
+            if (a.priority != b.priority) {
+                return a.priority < b.priority;
+            }
+            return a.plane < b.plane;
+        });
+
+        if (numCandidates == 0) {
+            engine->frameBuffer[scanline][x] = backdrop;
+        } else {
+            uint32_t finalColor = candidates[0].color;
+            int topPlane = candidates[0].plane;
+
+            // Check alpha blending
+            if (engine->blend.blendMode == 1 && (engine->blend.srcMask & (1 << topPlane))) {
+                // Search for 2nd target plane in dstMask
+                uint32_t dstColor = 0;
+                bool hasDst = false;
+
+                for (int c = 1; c < numCandidates; ++c) {
+                    if (engine->blend.dstMask & (1 << candidates[c].plane)) {
+                        dstColor = candidates[c].color;
+                        hasDst = true;
+                        break;
+                    }
+                }
+
+                // If no lower plane matched dstMask, check backdrop (bit 5 in BLDCNT)
+                if (!hasDst && (engine->blend.dstMask & (1 << 5))) {
+                    dstColor = backdrop;
+                    hasDst = true;
+                }
+
+                if (hasDst) {
+                    finalColor = NdsCompositor_AlphaBlend(finalColor, dstColor, engine->blend.evA, engine->blend.evB);
+                }
+            }
+
+            engine->frameBuffer[scanline][x] = finalColor;
+        }
+    }
 }
 
 } // extern "C"

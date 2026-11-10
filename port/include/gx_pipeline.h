@@ -49,6 +49,11 @@ void NdsGfx_RenderSub(void);
  */
 void NdsGfx_PresentFrame(void);
 
+/**
+ * Synchronize hardware I/O registers from gHardwareIoRegMemory into the display engine.
+ */
+void NdsGfx_SyncRegisters(NdsDisplayEngine* engine, bool isSub);
+
 #ifdef __cplusplus
 }
 #endif
