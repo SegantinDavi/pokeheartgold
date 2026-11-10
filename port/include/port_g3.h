@@ -39,6 +39,12 @@ typedef u32 GXTexFmt;
 typedef u32 GXTexGen;
 typedef u32 GXTexSizeS;
 typedef u32 GXTexSizeT;
+
+#define GX_TEXREPEAT_NONE 0
+#define GX_TEXREPEAT_S    1
+#define GX_TEXREPEAT_T    2
+#define GX_TEXREPEAT_ST   3
+
 typedef u32 GXTexRepeat;
 typedef u32 GXTexFlip;
 typedef u32 GXTexPlttColor0;
